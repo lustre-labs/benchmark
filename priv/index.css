@@ -46,7 +46,7 @@ body {
 #results {
   .column tbody td {
     transform-origin: bottom;
-    animation: revealing-bars 2s linear infinite;
+    animation: revealing-bars 2s ease-out;
   }
 }
 

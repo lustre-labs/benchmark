@@ -58,6 +58,5 @@ function timed(callback) {
 
 function wait_for_rerender(callback) {
   requestAnimationFrame(() =>
-    requestAnimationFrame(() =>
-      queueMicrotask(callback)))
+    queueMicrotask(callback))
 }

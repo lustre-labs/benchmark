@@ -37,11 +37,11 @@ pub fn run(step: Step, msg: msg) -> Effect(msg) {
   use dispatch <- effect.from
   case step {
     NewTodo(value) -> {
-      use <- set_value("#todo-input", value)
+      use <- set_value(".new-todo", value)
       dispatch(msg)
     }
     SubmitTodo -> {
-      use <- press_enter("#todo-input")
+      use <- press_enter(".new-todo")
       dispatch(msg)
     }
     CheckTodo(index) -> {

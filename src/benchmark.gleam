@@ -45,10 +45,10 @@ pub fn view_frame(
         attribute.id("benchmark"),
         attribute.src(url),
         event.on("load", decode.success(on_load)),
-        event.on(
-          "lustre-benchmark:measurement",
-          decode.map(measure.decoder(), on_measure),
-        ),
+        event.on("lustre-benchmark:measurement", {
+          use measure <- decode.field("detail", measure.decoder())
+          decode.success(on_measure(measure))
+        }),
       ]),
     ),
   ])
