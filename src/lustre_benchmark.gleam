@@ -15,6 +15,7 @@ const num_items = 100
 
 pub const benchmarks: List(Benchmark) = [
   Benchmark(name: "Lustre", version: "5.0.0", optimised: False),
+  Benchmark(name: "Lustre", version: "4.6.4", optimised: False),
 ]
 
 pub fn main() {
@@ -33,6 +34,7 @@ type Model {
     benchmarks: List(Benchmark),
     measurements: List(#(Benchmark, List(Measurement))),
     steps: List(Step),
+    can_unload: Bool,
   )
 }
 
@@ -56,6 +58,7 @@ type Msg {
   BenchmarkSetup
   BenchmarkStepExecuted
   BenchmarkMeasurementReceived(Measurement)
+  BenchmarkTryUnload
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
@@ -83,6 +86,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
             benchmarks: rest_benchmarks,
             steps: step.add_complete_delete(num_items),
             measurements: [],
+            can_unload: False,
           )
       }
 
@@ -99,13 +103,54 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       case model {
         Running(..) -> {
           let current_measurements = [measurement, ..model.current_measurements]
-          let model = Running(..model, current_measurements:)
+          let model = Running(..model, current_measurements:, can_unload: False)
           #(model, effect.none())
         }
         _ -> #(model, effect.none())
       }
 
     BenchmarkSetup | BenchmarkStepExecuted -> step(model)
+
+    BenchmarkTryUnload ->
+      case model {
+        Running(
+          can_unload: True,
+          benchmarks: [next_benchmark, ..benchmarks],
+          ..,
+        ) -> {
+          step(
+            Running(
+              ..model,
+              current_benchmark: next_benchmark,
+              benchmarks: benchmarks,
+              steps: step.add_complete_delete(num_items),
+            ),
+          )
+        }
+
+        Running(can_unload: True, benchmarks: [], ..) -> {
+          let results =
+            model.measurements
+            |> list.prepend(#(
+              model.current_benchmark,
+              model.current_measurements,
+            ))
+            |> list.map(pair.map_second(_, measure.to_results))
+            |> list.reverse
+
+          let model = Finished(selected: model.selected, results:)
+          #(model, effect.none())
+        }
+
+        Running(can_unload: False, ..) -> {
+          #(Running(..model, can_unload: True), {
+            use dispatch <- effect.after_paint
+            dispatch(BenchmarkTryUnload)
+          })
+        }
+
+        _ -> #(model, effect.none())
+      }
   }
 }
 
@@ -116,26 +161,12 @@ fn step(model: Model) -> #(Model, Effect(Msg)) {
       #(model, step.run(step, BenchmarkStepExecuted))
     }
 
-    Running(steps: [], benchmarks: [next_benchmark, ..benchmarks], ..) -> {
-      step(
-        Running(
-          ..model,
-          current_benchmark: next_benchmark,
-          benchmarks: benchmarks,
-          steps: step.add_complete_delete(num_items),
-        ),
-      )
-    }
-
-    Running(steps: [], benchmarks: [], ..) -> {
-      let results =
-        model.measurements
-        |> list.prepend(#(model.current_benchmark, model.current_measurements))
-        |> list.map(pair.map_second(_, measure.to_results))
-        |> list.reverse
-
-      let model = Finished(selected: model.selected, results:)
-      #(model, effect.none())
+    Running(steps: [], ..) -> {
+      let model = Running(..model, can_unload: True)
+      #(model, {
+        use dispatch <- effect.after_paint
+        dispatch(BenchmarkTryUnload)
+      })
     }
 
     _ -> #(model, effect.none())

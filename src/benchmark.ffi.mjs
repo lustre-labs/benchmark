@@ -1,6 +1,7 @@
 export function setup_instrumentation() {
   const iframe = document.getElementById('benchmark')
-  
+
+  const globalSetTimeout = iframe.contentWindow.setTimeout.bind(iframe.contentWindow)
   const globalRaf = iframe.contentWindow.requestAnimationFrame.bind(iframe.contentWindow)
   const globalCaf = iframe.contentWindow.cancelAnimationFrame.bind(iframe.contentWindow)
   let rafQueue = []
@@ -27,6 +28,21 @@ export function setup_instrumentation() {
       globalCaf(nextRafId)
       nextRafId = null;
     }
+  }
+
+  iframe.contentWindow.setTimeout = function setTimeout(handler, timeout, ...args) {
+    return globalSetTimeout(function() {
+      const start = performance.now()
+      try {
+        handler(...args)
+      } finally {
+        const elapsed = performance.now() - start
+        const event = new CustomEvent('lustre-benchmark:measurement', {
+          detail: { type: 'async', elapsed }
+        })
+        iframe.dispatchEvent(event)
+      }
+    }, timeout, ...args)
   }
 
   function runAnimationFrame() {

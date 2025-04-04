@@ -37,6 +37,7 @@ function wait_for_element(selector) {
     if (element) {
       resolve(element)
     } else {
+      console.log(selector)
       setTimeout(go, 50, resolve)
     }
   }
@@ -57,6 +58,7 @@ function timed(callback) {
 }
 
 function wait_for_rerender(callback) {
-  requestAnimationFrame(() =>
-    queueMicrotask(callback))
+  requestAnimationFrame(() => 
+    requestAnimationFrame(() =>
+      queueMicrotask(callback)))
 }
