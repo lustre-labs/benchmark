@@ -1,0 +1,61 @@
+body {
+  padding: 0;
+  margin: 0;
+  background-color: rgb(253, 253, 253);
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+#picker {
+  top: 20px;
+  right: 20px;
+  position: absolute;
+  padding: 10px;
+  background-color: rgb(240, 240, 240);
+  border-radius: 4px;
+
+  button {
+    width: 100%;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 2px;
+    margin: 2px;
+
+    &.running {
+      color: #aaa;
+    }
+  }
+}
+
+#benchmark {
+  width: 800px;
+  height: 600px;
+  margin: 20px;
+  border: 2px solid black;
+}
+
+#results,
+#info {
+  width: 800px;
+  margin: 20px;
+  border-radius: 4px;
+  display: block;
+}
+
+#results {
+  .column tbody td {
+    transform-origin: bottom;
+    animation: revealing-bars 2s linear infinite;
+  }
+}
+
+@keyframes revealing-bars {
+  0% {
+    transform: scaleY(0);
+  }
+
+  30% {
+    transform: scaleY(1);
+  }
+}
