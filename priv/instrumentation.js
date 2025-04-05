@@ -7,11 +7,17 @@
   const iframe = [...parentWindow.document.getElementsByTagName('iframe')]
     .find(iframe => iframe.contentDocument === document);
 
-  const timed = (type, register) => (callback, ...args) => {
-    register((...args) => {
+  if (!iframe) {
+    return;
+  }
+
+  const timed = (type, register) => function (callback, ...args)  {
+    if (!callback) return register.call(this, callback, ...args);
+    
+    return register.call(this, (...args) => {
       const start = performance.now()
       try {
-        callback(...args)
+        return callback(...args)
       } finally {
         const elapsed = performance.now() - start
         const event = new CustomEvent('lustre-benchmark:measurement', {
@@ -24,5 +30,9 @@
 
   window.setTimeout = timed('timeout', window.setTimeout.bind(window))
   window.requestAnimationFrame = timed('animation_frame', window.requestAnimationFrame.bind(window))
-  window.queueMicrotask = timed('microtask', window.queueMicrotask.bind(window)) 
+  window.queueMicrotask = timed('microtask', window.queueMicrotask.bind(window))
+  // window.requestIdleCallback = timed('microtask', window.requestIdleCallback.bind(window))
+  Promise.prototype.then = timed('promise', Promise.prototype.then)
+  Promise.prototype.catch = timed('promise', Promise.prototype.catch)
+  Promise.prototype.finally = timed('promise', Promise.prototype.finally)
 })()

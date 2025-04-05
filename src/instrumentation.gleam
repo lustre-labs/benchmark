@@ -12,10 +12,25 @@ pub type Measurement {
   Timeout(elapsed: Float)
   AnimationFrame(elapsed: Float)
   Microtask(elapsed: Float)
+  Promise(elapsed: Float)
 }
 
 pub type Results {
-  Results(sync: Float, timeout: Float, animation_frame: Float, microtask: Float)
+  Results(
+    sync: Float,
+    timeout: Float,
+    animation_frame: Float,
+    microtask: Float,
+    promise: Float,
+  )
+}
+
+pub fn total(results: Results) {
+  results.sync
+  +. results.timeout
+  +. results.animation_frame
+  +. results.microtask
+  +. results.promise
 }
 
 pub fn decoder() -> decode.Decoder(Measurement) {
@@ -27,6 +42,7 @@ pub fn decoder() -> decode.Decoder(Measurement) {
     "timeout" -> decode.success(Timeout(elapsed:))
     "animation_frame" -> decode.success(AnimationFrame(elapsed:))
     "microtask" -> decode.success(Microtask(elapsed:))
+    "promise" -> decode.success(Promise(elapsed:))
 
     _ -> decode.failure(Sync(0.0), "Measurement")
   }
@@ -43,7 +59,13 @@ pub fn on_measurement(to_msg: fn(Measurement) -> msg) -> Attribute(msg) {
 
 pub fn to_results(measurements: List(Measurement)) -> Results {
   let initial =
-    Results(sync: 0.0, timeout: 0.0, animation_frame: 0.0, microtask: 0.0)
+    Results(
+      sync: 0.0,
+      timeout: 0.0,
+      animation_frame: 0.0,
+      microtask: 0.0,
+      promise: 0.0,
+    )
 
   use results, measurement <- list.fold(measurements, initial)
 
@@ -54,19 +76,14 @@ pub fn to_results(measurements: List(Measurement)) -> Results {
       Results(..results, animation_frame: results.animation_frame +. elapsed)
     Microtask(elapsed) ->
       Results(..results, microtask: results.microtask +. elapsed)
+    Promise(elapsed) -> Results(..results, promise: results.promise +. elapsed)
   }
 }
 
 pub fn view(data: List(#(String, Results))) -> Element(msg) {
   let max = {
     use max, #(_, results) <- list.fold(data, 0.0)
-    float.max(
-      max,
-      results.sync
-        +. results.timeout
-        +. results.animation_frame
-        +. results.microtask,
-    )
+    float.max(max, total(results))
   }
 
   html.div([attribute.id("results")], [
@@ -79,32 +96,54 @@ pub fn view(data: List(#(String, Results))) -> Element(msg) {
       [
         html.tbody([], {
           use #(label, results) <- list.map(data)
-          let Results(sync:, timeout:, animation_frame:, microtask:) = results
+          let total = total(results)
 
           html.tr([], [
             html.th([attribute.attribute("scope", "row")], [html.text(label)]),
-            html.td([size(microtask, max)], []),
-            html.td([size(animation_frame, max)], []),
-            html.td([size(timeout, max)], []),
-            html.td([size(sync, max)], [
-              html.span([attribute.class("data")], [
-                html.text("Sync: "),
-                html.text(humanise.milliseconds_float(sync)),
-                html.br([]),
-                html.text("Timeout: "),
-                html.text(humanise.milliseconds_float(timeout)),
-                html.br([]),
-                html.text("Animation frame: "),
-                html.text(humanise.milliseconds_float(animation_frame)),
-                html.br([]),
-                html.text("Microtask: "),
-                html.text(humanise.milliseconds_float(microtask)),
+            html.td([size(results.promise, max)], []),
+            html.td([size(results.microtask, max)], []),
+            html.td([size(results.animation_frame, max)], []),
+            html.td([size(results.timeout, max)], []),
+            html.td([size(results.sync, max)], [
+              html.div([attribute.class("data")], [
+                html.div([], [
+                  html.text("Total: "),
+                  html.text(humanise.milliseconds_float(total)),
+                ]),
+                case results.sync >. 0.0 {
+                  True -> time("Sync", results.sync)
+                  False -> element.none()
+                },
+                case results.timeout >. 0.0 {
+                  True -> time("Timeout", results.timeout)
+                  False -> element.none()
+                },
+                case results.animation_frame >. 0.0 {
+                  True -> time("Animation frame", results.animation_frame)
+                  False -> element.none()
+                },
+                case results.microtask >. 0.0 {
+                  True -> time("Microtask", results.microtask)
+                  False -> element.none()
+                },
+                case results.promise >. 0.0 {
+                  True -> time("Promise", results.promise)
+                  False -> element.none()
+                },
               ]),
             ]),
           ])
         }),
       ],
     ),
+  ])
+}
+
+fn time(label, time) {
+  html.div([], [
+    html.text(label),
+    html.text(": "),
+    html.text(humanise.milliseconds_float(time)),
   ])
 }
 
