@@ -12,8 +12,19 @@ body {
   padding: 10px;
   background-color: rgb(240, 240, 240);
   border-radius: 4px;
+  z-index: 1;
+
+  label {
+    display: flex;
+    gap: 10px;
+  }
+
+  input[type=number] {
+    width: 100px;
+  }
 
   button {
+    margin-top: 15px;
     width: 100%;
   }
 
@@ -37,16 +48,26 @@ body {
 
 #results,
 #info {
-  width: 800px;
   margin: 20px;
   border-radius: 4px;
   display: block;
 }
 
+#info {
+  max-width: 800px;
+}
+
 #results {
+  width: calc(100% - 200px);
+
   .column tbody td {
     transform-origin: bottom;
     animation: revealing-bars 2s ease-out;
+  }
+
+  .data {
+    font-size: 0.7em;
+    flex-direction: column;
   }
 }
 
