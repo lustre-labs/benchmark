@@ -46,17 +46,26 @@ pub fn run(step: Step, msg: msg) -> Effect(msg) {
     }
     CheckTodo(index) -> {
       let selector =
-        ".todo-list>:nth-child(" <> int.to_string(index) <> ") .toggle"
+        ".todo-list>:nth-of-type(" <> int.to_string(index) <> ") .toggle"
 
       use <- click(selector)
       dispatch(msg)
     }
     RemoveFirstTodo -> {
-      use <- click(".todo-list>:first-child .destroy")
+      use <- click(".todo-list .destroy")
       dispatch(msg)
     }
   }
 }
+
+pub fn wait_for_element(selector: String, msg) -> Effect(msg) {
+  use dispatch <- effect.from
+  use <- do_wait(selector)
+  dispatch(msg)
+}
+
+@external(javascript, "./step.ffi.mjs", "wait_for_element")
+fn do_wait(selector: String, callback: fn() -> a) -> Nil
 
 @external(javascript, "./step.ffi.mjs", "set_value")
 fn set_value(selector: String, value: String, callback: fn() -> a) -> Nil

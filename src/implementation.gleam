@@ -11,6 +11,13 @@ pub type Implementation {
   Implementation(name: String, version: String, optimised: Bool)
 }
 
+pub fn decoder() -> decode.Decoder(Implementation) {
+  use name <- decode.field("name", decode.string)
+  use version <- decode.field("version", decode.string)
+  use optimised <- decode.field("optimised", decode.bool)
+  decode.success(Implementation(name:, version:, optimised:))
+}
+
 pub fn id(implementation: Implementation) {
   let base =
     string.lowercase(implementation.name) <> "-" <> implementation.version

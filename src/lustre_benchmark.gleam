@@ -1,7 +1,9 @@
+import gleam/dynamic/decode
+import gleam/int
 import gleam/list
 import gleam/pair
 import gleam/set.{type Set}
-import implementation.{type Implementation, Implementation}
+import implementation.{type Implementation}
 import instrumentation.{type Measurement, type Results}
 import lustre
 import lustre/attribute
@@ -11,54 +13,77 @@ import lustre/element/html
 import lustre/event
 import step.{type Step}
 
-const num_items = 100
-
-pub const implementations: List(Implementation) = [
-  Implementation(name: "Lustre", version: "4.6.4", optimised: False),
-  Implementation(name: "Lustre", version: "5.0.0", optimised: False),
-  Implementation(name: "React", version: "19.1.0", optimised: False),
-]
-
 pub fn main() {
+  let assert Ok(implementations) =
+    get_implementations() |> decode.run(decode.list(implementation.decoder()))
+
   let app = lustre.application(init, update, view)
-  let assert Ok(_) = lustre.start(app, "body", Nil)
+
+  let assert Ok(_) = lustre.start(app, "body", implementations)
   Nil
 }
 
+@external(javascript, "./app.ffi.mjs", "get_implementations")
+fn get_implementations() -> decode.Dynamic
+
 type Model {
-  NotRunYet(selected: Set(Implementation))
-  Finished(
+  Model(
+    implementations: List(Implementation),
     selected: Set(Implementation),
-    results: List(#(Implementation, Results)),
+    num_items: Int,
+    runner: Runner,
+  )
+}
+
+type Runner {
+  NotRunYet
+  Finished(results: List(#(Implementation, Results)))
+  Loading(
+    current_implementation: Implementation,
+    implementations: List(Implementation),
+    measurements: List(#(Implementation, List(Measurement))),
   )
   Running(
-    selected: Set(Implementation),
     current_implementation: Implementation,
     current_measurements: List(Measurement),
     implementations: List(Implementation),
     measurements: List(#(Implementation, List(Measurement))),
     steps: List(Step),
+  )
+  Unloading(
+    current_implementation: Implementation,
+    current_measurements: List(Measurement),
+    implementations: List(Implementation),
+    measurements: List(#(Implementation, List(Measurement))),
     can_unload: Bool,
   )
 }
 
 fn is_running(model: Model) -> Bool {
-  case model {
+  case model.runner {
     Running(..) -> True
     _ -> False
   }
 }
 
-fn init(_flags) -> #(Model, Effect(Msg)) {
-  let model = NotRunYet(selected: set.new())
+fn init(implementations) -> #(Model, Effect(Msg)) {
+  let model =
+    Model(
+      implementations:,
+      selected: set.new(),
+      num_items: 100,
+      runner: NotRunYet,
+    )
   #(model, effect.none())
 }
 
 type Msg {
   UserToggledImplementation(Implementation, Bool)
+  UserChangedNumItems(num_items: Int)
   UserClickedStart
   //
   ImplementationLoaded
+  ImplementationRendered
   StepExecuted
   MeasurementReceived(Measurement)
   TryUnload
@@ -66,83 +91,113 @@ type Msg {
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    UserToggledImplementation(benchmark, True) -> {
-      let model = update_selected(model, set.insert(_, benchmark))
+    UserToggledImplementation(implementation, True) -> {
+      let model =
+        Model(..model, selected: set.insert(model.selected, implementation))
       #(model, effect.none())
     }
-    UserToggledImplementation(benchmark, False) -> {
-      let model = update_selected(model, set.delete(_, benchmark))
+    UserToggledImplementation(implementation, False) -> {
+      let model =
+        Model(..model, selected: set.delete(model.selected, implementation))
       #(model, effect.none())
+    }
+    UserChangedNumItems(num_items) -> {
+      #(Model(..model, num_items:), effect.none())
     }
     UserClickedStart -> {
       let selected =
-        implementations
+        model.implementations
         |> list.filter(set.contains(model.selected, _))
 
-      let model = case selected {
-        [] -> model
+      let runner = case selected {
+        [] -> model.runner
         [current_implementation, ..implementations] ->
-          Running(
-            selected: model.selected,
-            current_implementation:,
-            current_measurements: [],
-            implementations:,
-            steps: step.add_complete_delete(num_items),
-            measurements: [],
-            can_unload: False,
-          )
+          Loading(current_implementation:, implementations:, measurements: [])
       }
 
-      #(model, effect.none())
+      #(Model(..model, runner:), effect.none())
     }
 
     MeasurementReceived(measurement) ->
-      case model {
-        Running(..) -> {
-          let current_measurements = [measurement, ..model.current_measurements]
-          let model = Running(..model, current_measurements:, can_unload: False)
-          #(model, effect.none())
+      case model.runner {
+        Running(current_measurements:, ..) as runner -> {
+          let current_measurements = [measurement, ..current_measurements]
+          let runner = Running(..runner, current_measurements:)
+          #(Model(..model, runner:), effect.none())
+        }
+        Unloading(current_measurements:, ..) as runner -> {
+          let current_measurements = [measurement, ..current_measurements]
+          let runner =
+            Unloading(..runner, current_measurements:, can_unload: False)
+          #(Model(..model, runner:), effect.none())
         }
         _ -> #(model, effect.none())
       }
 
-    ImplementationLoaded | StepExecuted -> step(model)
+    ImplementationLoaded -> {
+      #(model, step.wait_for_element(".new-todo", ImplementationRendered))
+    }
 
-    TryUnload ->
-      case model {
-        Running(can_unload: True, implementations: [next, ..rest], ..) -> {
-          let model =
-            Running(
-              ..model,
-              current_implementation: next,
+    ImplementationRendered ->
+      case model.runner {
+        Loading(current_implementation:, implementations:, measurements:) -> {
+          let #(runner, effects) =
+            step(Running(
+              current_implementation:,
               current_measurements: [],
-              implementations: rest,
-              measurements: [
-                #(model.current_implementation, model.current_measurements),
-                ..model.measurements
-              ],
-              steps: step.add_complete_delete(num_items),
-              can_unload: False,
-            )
+              implementations:,
+              measurements:,
+              steps: step.add_complete_delete(model.num_items),
+            ))
 
-          #(model, effect.none())
+          #(Model(..model, runner:), effects)
         }
 
-        Running(can_unload: True, implementations: [], ..) -> {
+        _ -> #(model, effect.none())
+      }
+
+    StepExecuted -> {
+      let #(runner, effects) = step(model.runner)
+      #(Model(..model, runner:), effects)
+    }
+
+    TryUnload ->
+      case model.runner {
+        Unloading(
+          can_unload: True,
+          current_implementation:,
+          implementations: [next_implementation, ..implementations],
+          measurements:,
+          current_measurements:,
+        ) -> {
+          let runner =
+            Loading(
+              current_implementation: next_implementation,
+              implementations:,
+              measurements: [
+                #(current_implementation, current_measurements),
+                ..measurements
+              ],
+            )
+
+          #(Model(..model, runner:), effect.none())
+        }
+
+        Unloading(can_unload: True, implementations: [], ..) as runner -> {
           let results =
             [
-              #(model.current_implementation, model.current_measurements),
-              ..model.measurements
+              #(runner.current_implementation, runner.current_measurements),
+              ..runner.measurements
             ]
             |> list.map(pair.map_second(_, instrumentation.to_results))
             |> list.reverse
 
-          let model = Finished(selected: model.selected, results:)
-          #(model, effect.none())
+          #(Model(..model, runner: Finished(results:)), effect.none())
         }
 
-        Running(can_unload: False, ..) -> {
-          #(Running(..model, can_unload: True), wait_for_next_frame(TryUnload))
+        Unloading(can_unload: False, ..) as runner -> {
+          let runner = Unloading(..runner, can_unload: True)
+          #(Model(..model, runner:), wait_for_next_frame(TryUnload))
         }
 
         _ -> #(model, effect.none())
@@ -150,19 +205,26 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   }
 }
 
-fn step(model: Model) -> #(Model, Effect(Msg)) {
-  case model {
+fn step(runner: Runner) -> #(Runner, Effect(Msg)) {
+  case runner {
     Running(steps: [step, ..steps], ..) -> {
-      let model = Running(..model, steps:)
+      let model = Running(..runner, steps:)
       #(model, step.run(step, StepExecuted))
     }
 
     Running(steps: [], ..) -> {
-      let model = Running(..model, can_unload: True)
+      let model =
+        Unloading(
+          current_implementation: runner.current_implementation,
+          can_unload: True,
+          current_measurements: runner.current_measurements,
+          implementations: runner.implementations,
+          measurements: runner.measurements,
+        )
       #(model, wait_for_next_frame(TryUnload))
     }
 
-    _ -> #(model, effect.none())
+    _ -> #(runner, effect.none())
   }
 }
 
@@ -171,21 +233,15 @@ fn wait_for_next_frame(msg) {
   dispatch(msg)
 }
 
-fn update_selected(model, f) {
-  case model {
-    NotRunYet(..) -> NotRunYet(selected: f(model.selected))
-    Finished(..) -> Finished(..model, selected: f(model.selected))
-    Running(..) -> Running(..model, selected: f(model.selected))
-  }
-}
-
 fn view(model: Model) -> Element(Msg) {
   element.fragment([
     view_picker(model),
-    case model {
-      NotRunYet(..) -> view_info()
-      Finished(results:, ..) -> view_results(results)
-      Running(current_implementation:, ..) ->
+    case model.runner {
+      NotRunYet -> view_info()
+      Finished(results:) -> view_results(results)
+      Running(current_implementation:, ..)
+      | Loading(current_implementation:, ..)
+      | Unloading(current_implementation:, ..) ->
         implementation.view_frame(
           current_implementation,
           ImplementationLoaded,
@@ -207,12 +263,27 @@ fn view_picker(model: Model) -> Element(Msg) {
     [
       html.ul(
         [attribute.classes([#("running", running)])],
-        list.map(implementations, fn(impl) {
+        list.map(model.implementations, fn(impl) {
           let checked = set.contains(model.selected, impl)
           let on_check = UserToggledImplementation(impl, _)
           html.li([], [implementation.view_selector(impl, checked, on_check)])
         }),
       ),
+      html.label([], [
+        html.text("# Items: "),
+        html.input([
+          attribute.type_("number"),
+          attribute.min("1"),
+          attribute.value(int.to_string(model.num_items)),
+          event.on("input", {
+            use value <- decode.subfield(["target", "value"], decode.string)
+            case int.parse(value) {
+              Ok(value) -> decode.success(UserChangedNumItems(value))
+              Error(_) -> decode.failure(UserChangedNumItems(0), "value")
+            }
+          }),
+        ]),
+      ]),
       html.button([attribute.type_("submit")], [html.text("Start")]),
     ],
   )
