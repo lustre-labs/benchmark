@@ -1,48 +1,49 @@
-export async function set_value(selector, value, callback) {
-  const element = await wait_for_element(selector)
-  const event = new Event('input', { bubbles: true })
+export function set_value(selector, value, callback) {
+  wait_for_element(selector, element => {
+    const event = new Event('input', { bubbles: true })
 
-  timed(() => {
-    element.value = value
-    element.dispatchEvent(event)
+    timed(() => {
+      element.value = value
+      element.dispatchEvent(event)
+    })
+
+    wait_for_rerender(callback)
   })
-
-  wait_for_rerender(callback)
 }
 
-export async function press_enter(selector, callback) {
-  const element = await wait_for_element(selector)
-  const event = new Event('keydown', { bubbles: true })
-  event.key = 'Enter'
-  event.keyCode = event.which = 13
+export function press_enter(selector, callback) {
+  wait_for_element(selector, element => { 
+    const event = new Event('keydown', { bubbles: true })
+    event.key = 'Enter'
+    event.keyCode = event.which = 13
 
-  timed(() => element.dispatchEvent(event))
+    timed(() => element.dispatchEvent(event))
 
-  wait_for_rerender(callback)
+    wait_for_rerender(callback)
+  })
 }
 
-export async function click(selector, callback) {
-  const element = await wait_for_element(selector)
-
-  timed(() => element.click())
-
-  wait_for_rerender(callback)
+export function click(selector, callback) {
+  wait_for_element(selector, element => {
+    timed(() => element.click())
+    wait_for_rerender(callback)
+  })
 }
 
-function wait_for_element(selector) {
+export function wait_for_element(selector, callback) {
   const iframe = document.getElementById('benchmark')
   
   function go(resolve) {
-    const element = iframe.contentDocument.querySelector(selector)
+    const element = querySelectorShadowDom.querySelectorDeep(selector, iframe.contentDocument)
     if (element) {
       resolve(element)
     } else {
       console.log(selector)
-      setTimeout(go, 50, resolve)
+      setTimeout(go, 100, resolve)
     }
   }
-  
-  return new Promise(resolve => go(resolve))
+
+  go(callback)
 }
 
 function timed(callback) {
