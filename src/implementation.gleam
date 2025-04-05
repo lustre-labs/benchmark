@@ -8,11 +8,11 @@ import lustre/element/keyed
 import lustre/event
 import measure.{type Measurement}
 
-pub type Benchmark {
-  Benchmark(name: String, version: String, optimised: Bool)
+pub type Implementation {
+  Implementation(name: String, version: String, optimised: Bool)
 }
 
-pub fn id(benchmark: Benchmark) {
+pub fn id(benchmark: Implementation) {
   let base = string.lowercase(benchmark.name) <> "-" <> benchmark.version
   case benchmark.optimised {
     True -> base <> "-optimised"
@@ -30,11 +30,11 @@ pub fn setup_instrumentation(msg) -> Effect(msg) {
 fn do_setup_instrumentation() -> Nil
 
 pub fn view_frame(
-  benchmark: Benchmark,
+  implementation: Implementation,
   on_load: msg,
   on_measure: fn(Measurement) -> msg,
 ) -> Element(msg) {
-  let id = id(benchmark)
+  let id = id(implementation)
   let url = "/priv/implementations/" <> id <> "/index.html"
   // use a keyed fragment with a single child here to make sure
   // that changing the benchmark always replaces the entire node.
@@ -55,7 +55,7 @@ pub fn view_frame(
 }
 
 pub fn view_selector(
-  benchmark: Benchmark,
+  implementation: Implementation,
   selected: Bool,
   on_check: fn(Bool) -> msg,
 ) -> Element(msg) {
@@ -66,13 +66,13 @@ pub fn view_selector(
       event.on_check(on_check),
     ]),
     html.text(" "),
-    html.text(to_string(benchmark)),
+    html.text(to_string(implementation)),
   ])
 }
 
-pub fn to_string(benchmark: Benchmark) -> String {
-  let base = benchmark.name <> " v" <> benchmark.version
-  case benchmark.optimised {
+pub fn to_string(implementation: Implementation) -> String {
+  let base = implementation.name <> " v" <> implementation.version
+  case implementation.optimised {
     True -> base <> " (optimised)"
     False -> base
   }

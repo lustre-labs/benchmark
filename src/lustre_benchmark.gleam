@@ -1,7 +1,7 @@
-import benchmark.{type Benchmark, Benchmark}
 import gleam/list
 import gleam/pair
 import gleam/set.{type Set}
+import implementation.{type Implementation, Implementation}
 import lustre
 import lustre/attribute
 import lustre/effect.{type Effect}
@@ -13,9 +13,9 @@ import step.{type Step}
 
 const num_items = 100
 
-pub const benchmarks: List(Benchmark) = [
-  Benchmark(name: "Lustre", version: "5.0.0", optimised: False),
-  Benchmark(name: "Lustre", version: "4.6.4", optimised: False),
+pub const implementations: List(Implementation) = [
+  Implementation(name: "Lustre", version: "5.0.0", optimised: False),
+  Implementation(name: "Lustre", version: "4.6.4", optimised: False),
 ]
 
 pub fn main() {
@@ -25,14 +25,17 @@ pub fn main() {
 }
 
 type Model {
-  NotRunYet(selected: Set(Benchmark))
-  Finished(selected: Set(Benchmark), results: List(#(Benchmark, Results)))
+  NotRunYet(selected: Set(Implementation))
+  Finished(
+    selected: Set(Implementation),
+    results: List(#(Implementation, Results)),
+  )
   Running(
-    selected: Set(Benchmark),
-    current_benchmark: Benchmark,
+    selected: Set(Implementation),
+    current_implementation: Implementation,
     current_measurements: List(Measurement),
-    benchmarks: List(Benchmark),
-    measurements: List(#(Benchmark, List(Measurement))),
+    implementations: List(Implementation),
+    measurements: List(#(Implementation, List(Measurement))),
     steps: List(Step),
     can_unload: Bool,
   )
@@ -51,39 +54,39 @@ fn init(_flags) -> #(Model, Effect(Msg)) {
 }
 
 type Msg {
-  UserToggledBenchmark(Benchmark, Bool)
+  UserToggledImplementation(Implementation, Bool)
   UserClickedStart
   //
-  BenchmarkLoaded
-  BenchmarkSetup
-  BenchmarkStepExecuted
-  BenchmarkMeasurementReceived(Measurement)
-  BenchmarkTryUnload
+  ImplementationLoaded
+  InstrumentationSetup
+  StepExecuted
+  MeasurementReceived(Measurement)
+  TryUnload
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    UserToggledBenchmark(benchmark, True) -> {
+    UserToggledImplementation(benchmark, True) -> {
       let model = update_selected(model, set.insert(_, benchmark))
       #(model, effect.none())
     }
-    UserToggledBenchmark(benchmark, False) -> {
+    UserToggledImplementation(benchmark, False) -> {
       let model = update_selected(model, set.delete(_, benchmark))
       #(model, effect.none())
     }
     UserClickedStart -> {
       let selected =
-        benchmarks
+        implementations
         |> list.filter(set.contains(model.selected, _))
 
       let model = case selected {
         [] -> model
-        [first_benchmark, ..rest_benchmarks] ->
+        [current_implementation, ..implementations] ->
           Running(
             selected: model.selected,
-            current_benchmark: first_benchmark,
+            current_implementation:,
             current_measurements: [],
-            benchmarks: rest_benchmarks,
+            implementations:,
             steps: step.add_complete_delete(num_items),
             measurements: [],
             can_unload: False,
@@ -93,13 +96,16 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       #(model, effect.none())
     }
 
-    BenchmarkLoaded ->
+    ImplementationLoaded ->
       case model {
-        Running(..) -> #(model, benchmark.setup_instrumentation(BenchmarkSetup))
+        Running(..) -> #(
+          model,
+          implementation.setup_instrumentation(InstrumentationSetup),
+        )
         _ -> #(model, effect.none())
       }
 
-    BenchmarkMeasurementReceived(measurement) ->
+    MeasurementReceived(measurement) ->
       case model {
         Running(..) -> {
           let current_measurements = [measurement, ..model.current_measurements]
@@ -109,23 +115,19 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         _ -> #(model, effect.none())
       }
 
-    BenchmarkSetup | BenchmarkStepExecuted -> step(model)
+    InstrumentationSetup | StepExecuted -> step(model)
 
-    BenchmarkTryUnload ->
+    TryUnload ->
       case model {
-        Running(
-          can_unload: True,
-          benchmarks: [next_benchmark, ..benchmarks],
-          ..,
-        ) -> {
+        Running(can_unload: True, implementations: [next, ..rest], ..) -> {
           let model =
             Running(
               ..model,
-              current_benchmark: next_benchmark,
+              current_implementation: next,
               current_measurements: [],
-              benchmarks: benchmarks,
+              implementations: rest,
               measurements: [
-                #(model.current_benchmark, model.current_measurements),
+                #(model.current_implementation, model.current_measurements),
                 ..model.measurements
               ],
               steps: step.add_complete_delete(num_items),
@@ -135,10 +137,10 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           #(model, effect.none())
         }
 
-        Running(can_unload: True, benchmarks: [], ..) -> {
+        Running(can_unload: True, implementations: [], ..) -> {
           let results =
             [
-              #(model.current_benchmark, model.current_measurements),
+              #(model.current_implementation, model.current_measurements),
               ..model.measurements
             ]
             |> list.map(pair.map_second(_, measure.to_results))
@@ -149,10 +151,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         }
 
         Running(can_unload: False, ..) -> {
-          #(
-            Running(..model, can_unload: True),
-            wait_for_next_frame(BenchmarkTryUnload),
-          )
+          #(Running(..model, can_unload: True), wait_for_next_frame(TryUnload))
         }
 
         _ -> #(model, effect.none())
@@ -164,12 +163,12 @@ fn step(model: Model) -> #(Model, Effect(Msg)) {
   case model {
     Running(steps: [step, ..steps], ..) -> {
       let model = Running(..model, steps:)
-      #(model, step.run(step, BenchmarkStepExecuted))
+      #(model, step.run(step, StepExecuted))
     }
 
     Running(steps: [], ..) -> {
       let model = Running(..model, can_unload: True)
-      #(model, wait_for_next_frame(BenchmarkTryUnload))
+      #(model, wait_for_next_frame(TryUnload))
     }
 
     _ -> #(model, effect.none())
@@ -195,11 +194,11 @@ fn view(model: Model) -> Element(Msg) {
     case model {
       NotRunYet(..) -> view_info()
       Finished(results:, ..) -> view_results(results)
-      Running(current_benchmark:, ..) ->
-        benchmark.view_frame(
-          current_benchmark,
-          BenchmarkLoaded,
-          BenchmarkMeasurementReceived,
+      Running(current_implementation:, ..) ->
+        implementation.view_frame(
+          current_implementation,
+          ImplementationLoaded,
+          MeasurementReceived,
         )
     },
   ])
@@ -217,10 +216,10 @@ fn view_picker(model: Model) -> Element(Msg) {
     [
       html.ul(
         [attribute.classes([#("running", running)])],
-        list.map(benchmarks, fn(benchmark) {
-          let checked = set.contains(model.selected, benchmark)
-          let on_check = UserToggledBenchmark(benchmark, _)
-          html.li([], [benchmark.view_selector(benchmark, checked, on_check)])
+        list.map(implementations, fn(impl) {
+          let checked = set.contains(model.selected, impl)
+          let on_check = UserToggledImplementation(impl, _)
+          html.li([], [implementation.view_selector(impl, checked, on_check)])
         }),
       ),
       html.button([attribute.type_("submit")], [html.text("Start")]),
@@ -271,8 +270,8 @@ fn view_info() {
   ])
 }
 
-fn view_results(data: List(#(Benchmark, Results))) -> Element(msg) {
+fn view_results(data: List(#(Implementation, Results))) -> Element(msg) {
   data
-  |> list.map(pair.map_first(_, benchmark.to_string))
+  |> list.map(pair.map_first(_, implementation.to_string))
   |> measure.view
 }
