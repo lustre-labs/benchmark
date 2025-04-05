@@ -12,9 +12,10 @@ pub type Implementation {
   Implementation(name: String, version: String, optimised: Bool)
 }
 
-pub fn id(benchmark: Implementation) {
-  let base = string.lowercase(benchmark.name) <> "-" <> benchmark.version
-  case benchmark.optimised {
+pub fn id(implementation: Implementation) {
+  let base =
+    string.lowercase(implementation.name) <> "-" <> implementation.version
+  case implementation.optimised {
     True -> base <> "-optimised"
     False -> base
   }
@@ -26,7 +27,7 @@ pub fn setup_instrumentation(msg) -> Effect(msg) {
   dispatch(msg)
 }
 
-@external(javascript, "./benchmark.ffi.mjs", "setup_instrumentation")
+@external(javascript, "./implementation.ffi.mjs", "setup_instrumentation")
 fn do_setup_instrumentation() -> Nil
 
 pub fn view_frame(
