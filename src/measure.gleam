@@ -49,16 +49,22 @@ pub fn view(data: List(#(String, Results))) -> Element(msg) {
     html.table(
       [
         attribute.class(
-          "charts-css column show-labels show-8-secondary-axes data-spacing-10",
+          "charts-css column show-labels show-8-secondary-axes data-spacing-10 multiple stacked",
         ),
       ],
       [
         html.tbody([], {
           use #(label, results) <- list.map(data)
-          let size = { results.sync +. results.async } /. max
+          let sync = results.sync /. max
+          let async = results.async /. max
+
           html.tr([], [
             html.th([attribute.attribute("scope", "row")], [html.text(label)]),
-            html.td([attribute.style([#("--size", float.to_string(size))])], [
+            html.td(
+              [attribute.style([#("--size", float.to_string(async))])],
+              [],
+            ),
+            html.td([attribute.style([#("--size", float.to_string(sync))])], [
               html.span([attribute.class("data")], [
                 html.text("Sync: "),
                 html.text(humanise.milliseconds_float(results.sync)),
