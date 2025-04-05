@@ -2,20 +2,21 @@ import gleam/list
 import gleam/pair
 import gleam/set.{type Set}
 import implementation.{type Implementation, Implementation}
+import instrumentation.{type Measurement, type Results}
 import lustre
 import lustre/attribute
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
-import measure.{type Measurement, type Results}
 import step.{type Step}
 
 const num_items = 100
 
 pub const implementations: List(Implementation) = [
-  Implementation(name: "Lustre", version: "5.0.0", optimised: False),
   Implementation(name: "Lustre", version: "4.6.4", optimised: False),
+  Implementation(name: "Lustre", version: "5.0.0", optimised: False),
+  Implementation(name: "React", version: "19.1.0", optimised: False),
 ]
 
 pub fn main() {
@@ -58,7 +59,6 @@ type Msg {
   UserClickedStart
   //
   ImplementationLoaded
-  InstrumentationSetup
   StepExecuted
   MeasurementReceived(Measurement)
   TryUnload
@@ -96,15 +96,6 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       #(model, effect.none())
     }
 
-    ImplementationLoaded ->
-      case model {
-        Running(..) -> #(
-          model,
-          implementation.setup_instrumentation(InstrumentationSetup),
-        )
-        _ -> #(model, effect.none())
-      }
-
     MeasurementReceived(measurement) ->
       case model {
         Running(..) -> {
@@ -115,7 +106,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         _ -> #(model, effect.none())
       }
 
-    InstrumentationSetup | StepExecuted -> step(model)
+    ImplementationLoaded | StepExecuted -> step(model)
 
     TryUnload ->
       case model {
@@ -143,7 +134,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
               #(model.current_implementation, model.current_measurements),
               ..model.measurements
             ]
-            |> list.map(pair.map_second(_, measure.to_results))
+            |> list.map(pair.map_second(_, instrumentation.to_results))
             |> list.reverse
 
           let model = Finished(selected: model.selected, results:)
@@ -273,5 +264,5 @@ fn view_info() {
 fn view_results(data: List(#(Implementation, Results))) -> Element(msg) {
   data
   |> list.map(pair.map_first(_, implementation.to_string))
-  |> measure.view
+  |> instrumentation.view
 }

@@ -1,12 +1,11 @@
 import gleam/dynamic/decode
 import gleam/string
+import instrumentation.{type Measurement}
 import lustre/attribute
-import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/keyed
 import lustre/event
-import measure.{type Measurement}
 
 pub type Implementation {
   Implementation(name: String, version: String, optimised: Bool)
@@ -21,22 +20,13 @@ pub fn id(implementation: Implementation) {
   }
 }
 
-pub fn setup_instrumentation(msg) -> Effect(msg) {
-  use dispatch <- effect.from
-  do_setup_instrumentation()
-  dispatch(msg)
-}
-
-@external(javascript, "./implementation.ffi.mjs", "setup_instrumentation")
-fn do_setup_instrumentation() -> Nil
-
 pub fn view_frame(
   implementation: Implementation,
   on_load: msg,
   on_measure: fn(Measurement) -> msg,
 ) -> Element(msg) {
   let id = id(implementation)
-  let url = "/priv/implementations/" <> id <> "/index.html"
+  let url = "/priv/implementations/" <> id <> "/dist/index.html"
   // use a keyed fragment with a single child here to make sure
   // that changing the benchmark always replaces the entire node.
   keyed.fragment([
@@ -46,10 +36,7 @@ pub fn view_frame(
         attribute.id("benchmark"),
         attribute.src(url),
         event.on("load", decode.success(on_load)),
-        event.on("lustre-benchmark:measurement", {
-          use measure <- decode.field("detail", measure.decoder())
-          decode.success(on_measure(measure))
-        }),
+        instrumentation.on_measurement(on_measure),
       ]),
     ),
   ])
