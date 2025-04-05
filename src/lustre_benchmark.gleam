@@ -118,23 +118,29 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           benchmarks: [next_benchmark, ..benchmarks],
           ..,
         ) -> {
-          step(
+          let model =
             Running(
               ..model,
               current_benchmark: next_benchmark,
+              current_measurements: [],
               benchmarks: benchmarks,
+              measurements: [
+                #(model.current_benchmark, model.current_measurements),
+                ..model.measurements
+              ],
               steps: step.add_complete_delete(num_items),
-            ),
-          )
+              can_unload: False,
+            )
+
+          #(model, effect.none())
         }
 
         Running(can_unload: True, benchmarks: [], ..) -> {
           let results =
-            model.measurements
-            |> list.prepend(#(
-              model.current_benchmark,
-              model.current_measurements,
-            ))
+            [
+              #(model.current_benchmark, model.current_measurements),
+              ..model.measurements
+            ]
             |> list.map(pair.map_second(_, measure.to_results))
             |> list.reverse
 
@@ -143,10 +149,10 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         }
 
         Running(can_unload: False, ..) -> {
-          #(Running(..model, can_unload: True), {
-            use dispatch <- effect.after_paint
-            dispatch(BenchmarkTryUnload)
-          })
+          #(
+            Running(..model, can_unload: True),
+            wait_for_next_frame(BenchmarkTryUnload),
+          )
         }
 
         _ -> #(model, effect.none())
@@ -163,14 +169,16 @@ fn step(model: Model) -> #(Model, Effect(Msg)) {
 
     Running(steps: [], ..) -> {
       let model = Running(..model, can_unload: True)
-      #(model, {
-        use dispatch <- effect.after_paint
-        dispatch(BenchmarkTryUnload)
-      })
+      #(model, wait_for_next_frame(BenchmarkTryUnload))
     }
 
     _ -> #(model, effect.none())
   }
+}
+
+fn wait_for_next_frame(msg) {
+  use dispatch <- effect.after_paint
+  dispatch(msg)
 }
 
 fn update_selected(model, f) {
