@@ -229,7 +229,7 @@ fn step(runner: Runner) -> #(Runner, Effect(Msg)) {
 }
 
 fn wait_for_next_frame(msg) {
-  use dispatch <- effect.after_paint
+  use dispatch, _ <- effect.after_paint
   dispatch(msg)
 }
 
@@ -258,7 +258,7 @@ fn view_picker(model: Model) -> Element(Msg) {
     [
       attribute.id("picker"),
       attribute.disabled(running),
-      event.on_submit(UserClickedStart),
+      event.on_submit(fn(_) { UserClickedStart }),
     ],
     [
       html.ul(

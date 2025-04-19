@@ -331,7 +331,7 @@ fn view_completed_count(entries_completed) {
 
 fn hidden(hidden) {
   case hidden {
-    True -> attribute.style([#("display", "none")])
+    True -> attribute.style("display", "none")
     False -> attribute.none()
   }
 }

@@ -148,5 +148,5 @@ fn time(label, time) {
 }
 
 fn size(value, max) {
-  attribute.style([#("--size", float.to_string(value /. max))])
+  attribute.style("--size", float.to_string(value /. max))
 }
