@@ -1,0 +1,15 @@
+{
+  "name": "gren-0.5.5",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "gren make src/Todo.gren --optimize --output=dist/gren.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "gren-lang": "^0.5.4"
+  }
+}

@@ -1,0 +1,363 @@
+port module Todo exposing (main)
+
+import Browser
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Html.Keyed as Keyed
+import Json.Decode as Json
+import String
+import Platform
+
+
+
+main : Platform.Program {} Model Msg
+main =
+  Browser.element
+    { init = \_ -> init
+    , view = view
+    , update = update
+    , subscriptions = \_ -> Sub.none
+    }
+
+
+port focus : String -> Cmd msg
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { entries : Array Entry
+    , field : String
+    , uid : Int
+    , visibility : String
+    }
+
+
+type alias Entry =
+    { description : String
+    , completed : Bool
+    , editing : Bool
+    , id : Int
+    }
+
+
+emptyModel : Model
+emptyModel =
+  { entries = []
+  , visibility = "All"
+  , field = ""
+  , uid = 0
+  }
+
+
+newEntry : String -> Int -> Entry
+newEntry desc id =
+  { description = desc
+  , completed = False
+  , editing = False
+  , id = id
+  }
+
+
+init : { model : Model, command : Cmd Msg }
+init =
+  { model = emptyModel
+  , command = Cmd.none
+  }
+
+
+
+-- UPDATE
+
+
+type Msg
+    = NoOp
+    | UpdateField String
+    | EditingEntry { id : Int, checked : Bool }
+    | UpdateEntry { id : Int, value : String }
+    | Add
+    | Delete Int
+    | DeleteComplete
+    | Check { id : Int, checked : Bool }
+    | CheckAll Bool
+    | ChangeVisibility String
+
+
+-- How we update our Model on a given Msg?
+update : Msg -> Model -> { model : Model, command : Cmd Msg }
+update msg model =
+  when msg is
+    NoOp ->
+      { model = model
+      , command = Cmd.none
+      }
+
+    Add ->
+      { model = { model
+        | uid = model.uid + 1
+        , field = ""
+        , entries =
+            if String.isEmpty model.field then
+              model.entries
+            else
+              model.entries ++ [newEntry model.field model.uid]
+      }
+      , command = Cmd.none
+      }
+
+    UpdateField str ->
+      { model = { model | field = str }
+      , command = Cmd.none
+      }
+
+    EditingEntry { id, checked = isEditing } ->
+      let
+        updateEntry t =
+          if t.id == id then { t | editing = isEditing } else t
+      in
+      { model = { model | entries =  Array.map updateEntry model.entries }
+      , command = focus ("#todo-" ++ String.fromInt id)
+      }
+
+    UpdateEntry { id, value = task } ->
+      let
+        updateEntry t =
+          if t.id == id then { t | description = task } else t
+      in
+      { model = { model | entries =  Array.map updateEntry model.entries }
+      , command = Cmd.none
+      }
+
+    Delete id ->
+      { model = { model | entries =  Array.keepIf (\t -> t.id /= id) model.entries }
+      , command = Cmd.none
+      }
+
+    DeleteComplete ->
+      { model = { model | entries =  Array.keepIf (not << .completed) model.entries }
+      , command = Cmd.none
+      }
+
+    Check { id, checked = isCompleted } ->
+      let
+        updateEntry t =
+          if t.id == id then { t | completed = isCompleted } else t
+      in
+      { model = { model | entries =  Array.map updateEntry model.entries }
+      , command = Cmd.none
+      }
+
+    CheckAll isCompleted ->
+      let
+        updateEntry t =
+          { t | completed = isCompleted }
+      in
+      { model = { model | entries =  Array.map updateEntry model.entries }
+      , command = Cmd.none
+      }
+
+    ChangeVisibility visibility ->
+      { model = { model | visibility = visibility }
+      , command = Cmd.none
+      }
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+  section
+    [ class "todoapp" ]
+    [ viewInput model.field
+    , viewEntries model.visibility model.entries
+    , viewControls model.visibility model.entries
+    ]
+
+
+viewInput : String -> Html Msg
+viewInput task =
+  header
+    [ class "header" ]
+    [ h1 [] [ text "todos" ]
+    , input
+        [ class "new-todo"
+        , placeholder "What needs to be done?"
+        , autofocus True
+        , value task
+        , name "newTodo"
+        , onInput UpdateField
+        , onEnter Add
+        ]
+        []
+    ]
+
+
+onEnter : Msg -> Attribute Msg
+onEnter msg =
+  let
+    tagger code =
+      if code == 13 then msg else NoOp
+  in
+    on "keydown" (Json.map tagger keyCode)
+
+
+
+-- VIEW ALL ENTRIES
+
+
+viewEntries : String ->  Array Entry -> Html Msg
+viewEntries visibility entries =
+  let
+    isVisible todo =
+      when visibility is
+        "Completed" -> todo.completed
+        "Active" -> not todo.completed
+        _ -> True
+
+    allCompleted =
+       Array.all .completed entries
+
+    cssVisibility =
+      if  Array.isEmpty entries then "hidden" else "visible"
+  in
+    section
+      [ class "main"
+      , style "visibility" cssVisibility
+      ]
+      [ input
+          [ class "toggle-all"
+          , type_ "checkbox"
+          , name "toggle"
+          , checked allCompleted
+          , onClick (CheckAll (not allCompleted))
+          ]
+          []
+      , label
+          [ for "toggle-all" ]
+          [ text "Mark all as complete" ]
+      , Keyed.ul [ class "todo-list" ] <|
+           Array.map viewEntry ( Array.keepIf isVisible entries )
+      ]
+
+
+
+-- VIEW INDIVIDUAL ENTRIES
+
+
+viewEntry : Entry -> { key : String, node : Html Msg }
+viewEntry todo =
+  let
+    nodeId = "todo-" ++ String.fromInt todo.id
+  in
+  { key = nodeId
+  , node =
+    li
+      [ classList
+        [ { class = "completed", enabled = todo.completed }
+        , { class = "editing", enabled = todo.editing }
+        ]
+      ]
+      [ div
+          [ class "view" ]
+          [ input
+              [ class "toggle"
+              , type_ "checkbox"
+              , checked todo.completed
+              , onClick (Check { id = todo.id, checked = (not todo.completed) })
+              ]
+              []
+          , label
+              [ onDoubleClick (EditingEntry { id = todo.id, checked = True }) ]
+              [ text todo.description ]
+          , button
+              [ class "destroy"
+              , onClick (Delete todo.id)
+              ]
+              []
+          ]
+      , input
+          [ class "edit"
+          , value todo.description
+          , name "title"
+          , id nodeId
+          , onInput (\value -> UpdateEntry { id = todo.id, value = value })
+          , onBlur (EditingEntry { id = todo.id, checked = False })
+          , onEnter (EditingEntry { id = todo.id, checked = False })
+          ]
+          []
+      ]
+  }
+
+
+
+-- VIEW CONTROLS AND FOOTER
+
+
+viewControls : String ->  Array Entry -> Html Msg
+viewControls visibility entries =
+  let
+    entriesCompleted =
+       Array.length ( Array.keepIf .completed entries)
+
+    entriesLeft =
+       Array.length entries - entriesCompleted
+  in
+    footer
+      [ class "footer"
+      , hidden ( Array.isEmpty entries)
+      ]
+      [ viewControlsCount entriesLeft
+      , viewControlsFilters visibility
+      , viewControlsClear entriesCompleted
+      ]
+
+
+viewControlsCount : Int -> Html Msg
+viewControlsCount entriesLeft =
+  let
+    item_ =
+      if entriesLeft == 1 then " item" else " items"
+  in
+    span
+      [ class "todo-count" ]
+      [ strong [] [ text (String.fromInt entriesLeft) ]
+      , text (item_ ++ " left")
+      ]
+
+
+viewControlsFilters : String -> Html Msg
+viewControlsFilters visibility =
+  ul
+    [ class "filters" ]
+    [ visibilitySwap "#/" "All" visibility
+    , text " "
+    , visibilitySwap "#/active" "Active" visibility
+    , text " "
+    , visibilitySwap "#/completed" "Completed" visibility
+    ]
+
+
+visibilitySwap : String -> String -> String -> Html Msg
+visibilitySwap uri visibility actualVisibility =
+  li
+    [ onClick (ChangeVisibility visibility) ]
+    [ a [ href uri, classList [ { class = "selected", enabled = visibility == actualVisibility } ] ]
+        [ text visibility ]
+    ]
+
+
+viewControlsClear : Int -> Html Msg
+viewControlsClear entriesCompleted =
+  button
+    [ class "clear-completed"
+    , hidden (entriesCompleted == 0)
+    , onClick DeleteComplete
+    ]
+    [ text ("Clear completed (" ++ String.fromInt entriesCompleted ++ ")")
+    ]
+

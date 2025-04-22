@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>🚧 todomvc</title>
+
+  <!-- Uncomment this if you add the TailwindCSS integration -->
+  <!-- <link rel="stylesheet" href="/priv/static/todomvc.css"> -->
+  <link rel="stylesheet" href="https://unpkg.com/todomvc-common/base.css">
+  <link rel="stylesheet" href="https://unpkg.com/todomvc-app-css/index.css">
+  <script src="/priv/instrumentation.js"></script>
+  <script src="gren.js"></script>
+</head>
+
+<body>
+  <section class="todoapp"></section>
+  <footer class="info">
+    <p>Double-click to edit a todo</p>
+    <p>Written by <a href="https://github.com/evancz">Evan Czaplicki</a></p>
+    <p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+  </footer>
+  <script type="application/javascript">
+    var app = Gren.Todo.init({node: document.querySelector('.todoapp'), flags: null})
+    app.ports.focus.subscribe(selector => {
+      setTimeout(() => {
+        var nodes = document.querySelectorAll(selector)
+        if (nodes.length === 1 && document.activeElement !== nodes[0]) {
+          nodes[0].focus()
+        }
+      }, 50)
+    })
+  </script>
+</body>
+
+</html>
