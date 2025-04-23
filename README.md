@@ -56,7 +56,7 @@ for production.
 
 ## Results
 
-!()[./docs/results-100.png]
+![](./docs/results-100.png)
 
 Measurements were taken using an AMD Ryzen™ 7 1700X and Chromimum 135.0.7049.95,
 running on NixOS 25.05.
