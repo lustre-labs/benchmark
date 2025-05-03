@@ -10,7 +10,7 @@ popular competitors of Elm, namely React 15, Angular 2, and Ember 2. For each of
 them, a basic runbook was executed: Add 100 items, check all items, and remove
 the first item 100 times. During that, the _synchronous_ time - the time it
 takes for the event to be dispatched - as well as one _asynchronous_ tick were
-measured. 
+measured.
 
 I claim that this methodology has several flaws giving an unfair advantage to Elm,
 while at the same time mostly measuring "background noise".
@@ -33,7 +33,7 @@ while at the same time mostly measuring "background noise".
 we've redesigned the benchmark to capture all work performed by frameworks, and
 only capture the work done by frameworks without including any extra browser
 time:
- 
+
 All implementations are required to include a script adding instrumentation to
 commonly-used async patterns: `requestAnimationFrame`, `setTimeout`,
 `queueMicrotask`, and Promise callbacks. The provided callback is wrapped and
@@ -57,18 +57,24 @@ for production.
 ## Results
 
 ![](./docs/results-100.png)
+![](./docs/results-1000.png)
 
 Measurements were taken using an AMD Ryzen™ 7 1700X and Chromimum 135.0.7049.95,
-running on NixOS 25.05.
+running on NixOS 25.05. Lustre was built using Gleam 1.11.
 
-All VDom-based frameworks - Elm, Gren, Lustre 5, React, and Vue - are extremely
+All VDOM-based frameworks - Elm, Gren, Lustre 5, React, and Vue - are extremely
 close, with variations in the single-digit millisecond range over the entire run
 of the benchmark. Expectedly, frameworks comparing against the live DOM directly
-(Alpine and Lustre) are noticably slower, while Sveltes direct DOM manipulations
+(Alpine and Lustre 4) are noticably slower, while Sveltes direct DOM manipulations
 give it a sizable advantage without any optimisations. Vues compiler manages to
 automatically optimise some updates, making it slightly faster than unoptimised
 VDOM implementations. Reacts performance can be doubled by structuring the
 code more favourably and introducing `useCallback` and `memo` calls.
+
+Using 1000 todos instead of 100 reveals differences in the individual performance
+characteristics more clearly: All "optimised" implementations get even better
+with that many elements; optimised Elm becomes over twice as fast as React
+or Svelte. Lustre can increase its distance compared to React and Elm.
 
 Notably, Elm still beats all other frameworks including Svelte with the
 introduction of a single `lazy` call.
