@@ -405,7 +405,7 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
   while (true) {
     let prefix = loop$prefix;
     let suffix = loop$suffix;
-    if (prefix.hasLength(0)) {
+    if (prefix instanceof Empty) {
       return suffix;
     } else {
       let first$1 = prefix.head;
@@ -423,7 +423,7 @@ function map_loop(loop$list, loop$fun, loop$acc) {
     let list4 = loop$list;
     let fun = loop$fun;
     let acc = loop$acc;
-    if (list4.hasLength(0)) {
+    if (list4 instanceof Empty) {
       return reverse(acc);
     } else {
       let first$1 = list4.head;
@@ -441,7 +441,7 @@ function append_loop(loop$first, loop$second) {
   while (true) {
     let first = loop$first;
     let second = loop$second;
-    if (first.hasLength(0)) {
+    if (first instanceof Empty) {
       return second;
     } else {
       let first$1 = first.head;
@@ -459,7 +459,7 @@ function fold(loop$list, loop$initial, loop$fun) {
     let list4 = loop$list;
     let initial = loop$initial;
     let fun = loop$fun;
-    if (list4.hasLength(0)) {
+    if (list4 instanceof Empty) {
       return initial;
     } else {
       let first$1 = list4.head;
@@ -479,7 +479,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
     let prev = loop$prev;
     let acc = loop$acc;
     let growing$1 = prepend(prev, growing);
-    if (list4.hasLength(0)) {
+    if (list4 instanceof Empty) {
       if (direction instanceof Ascending) {
         return prepend(reverse(growing$1), acc);
       } else {
@@ -489,116 +489,120 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
       let new$1 = list4.head;
       let rest$1 = list4.tail;
       let $ = compare4(prev, new$1);
-      if ($ instanceof Gt && direction instanceof Descending) {
-        loop$list = rest$1;
-        loop$compare = compare4;
-        loop$growing = growing$1;
-        loop$direction = direction;
-        loop$prev = new$1;
-        loop$acc = acc;
-      } else if ($ instanceof Lt && direction instanceof Ascending) {
-        loop$list = rest$1;
-        loop$compare = compare4;
-        loop$growing = growing$1;
-        loop$direction = direction;
-        loop$prev = new$1;
-        loop$acc = acc;
-      } else if ($ instanceof Eq && direction instanceof Ascending) {
-        loop$list = rest$1;
-        loop$compare = compare4;
-        loop$growing = growing$1;
-        loop$direction = direction;
-        loop$prev = new$1;
-        loop$acc = acc;
-      } else if ($ instanceof Gt && direction instanceof Ascending) {
-        let _block;
-        if (direction instanceof Ascending) {
-          _block = prepend(reverse(growing$1), acc);
-        } else {
-          _block = prepend(growing$1, acc);
-        }
-        let acc$1 = _block;
-        if (rest$1.hasLength(0)) {
-          return prepend(toList([new$1]), acc$1);
-        } else {
-          let next = rest$1.head;
-          let rest$2 = rest$1.tail;
-          let _block$1;
-          let $1 = compare4(new$1, next);
-          if ($1 instanceof Lt) {
-            _block$1 = new Ascending();
-          } else if ($1 instanceof Eq) {
-            _block$1 = new Ascending();
-          } else {
-            _block$1 = new Descending();
-          }
-          let direction$1 = _block$1;
-          loop$list = rest$2;
+      if (direction instanceof Ascending) {
+        if ($ instanceof Lt) {
+          loop$list = rest$1;
           loop$compare = compare4;
-          loop$growing = toList([new$1]);
-          loop$direction = direction$1;
-          loop$prev = next;
-          loop$acc = acc$1;
-        }
-      } else if ($ instanceof Lt && direction instanceof Descending) {
-        let _block;
-        if (direction instanceof Ascending) {
-          _block = prepend(reverse(growing$1), acc);
-        } else {
-          _block = prepend(growing$1, acc);
-        }
-        let acc$1 = _block;
-        if (rest$1.hasLength(0)) {
-          return prepend(toList([new$1]), acc$1);
-        } else {
-          let next = rest$1.head;
-          let rest$2 = rest$1.tail;
-          let _block$1;
-          let $1 = compare4(new$1, next);
-          if ($1 instanceof Lt) {
-            _block$1 = new Ascending();
-          } else if ($1 instanceof Eq) {
-            _block$1 = new Ascending();
-          } else {
-            _block$1 = new Descending();
-          }
-          let direction$1 = _block$1;
-          loop$list = rest$2;
+          loop$growing = growing$1;
+          loop$direction = direction;
+          loop$prev = new$1;
+          loop$acc = acc;
+        } else if ($ instanceof Eq) {
+          loop$list = rest$1;
           loop$compare = compare4;
-          loop$growing = toList([new$1]);
-          loop$direction = direction$1;
-          loop$prev = next;
-          loop$acc = acc$1;
+          loop$growing = growing$1;
+          loop$direction = direction;
+          loop$prev = new$1;
+          loop$acc = acc;
+        } else {
+          let _block;
+          if (direction instanceof Ascending) {
+            _block = prepend(reverse(growing$1), acc);
+          } else {
+            _block = prepend(growing$1, acc);
+          }
+          let acc$1 = _block;
+          if (rest$1 instanceof Empty) {
+            return prepend(toList([new$1]), acc$1);
+          } else {
+            let next = rest$1.head;
+            let rest$2 = rest$1.tail;
+            let _block$1;
+            let $1 = compare4(new$1, next);
+            if ($1 instanceof Lt) {
+              _block$1 = new Ascending();
+            } else if ($1 instanceof Eq) {
+              _block$1 = new Ascending();
+            } else {
+              _block$1 = new Descending();
+            }
+            let direction$1 = _block$1;
+            loop$list = rest$2;
+            loop$compare = compare4;
+            loop$growing = toList([new$1]);
+            loop$direction = direction$1;
+            loop$prev = next;
+            loop$acc = acc$1;
+          }
         }
       } else {
-        let _block;
-        if (direction instanceof Ascending) {
-          _block = prepend(reverse(growing$1), acc);
-        } else {
-          _block = prepend(growing$1, acc);
-        }
-        let acc$1 = _block;
-        if (rest$1.hasLength(0)) {
-          return prepend(toList([new$1]), acc$1);
-        } else {
-          let next = rest$1.head;
-          let rest$2 = rest$1.tail;
-          let _block$1;
-          let $1 = compare4(new$1, next);
-          if ($1 instanceof Lt) {
-            _block$1 = new Ascending();
-          } else if ($1 instanceof Eq) {
-            _block$1 = new Ascending();
+        if ($ instanceof Lt) {
+          let _block;
+          if (direction instanceof Ascending) {
+            _block = prepend(reverse(growing$1), acc);
           } else {
-            _block$1 = new Descending();
+            _block = prepend(growing$1, acc);
           }
-          let direction$1 = _block$1;
-          loop$list = rest$2;
+          let acc$1 = _block;
+          if (rest$1 instanceof Empty) {
+            return prepend(toList([new$1]), acc$1);
+          } else {
+            let next = rest$1.head;
+            let rest$2 = rest$1.tail;
+            let _block$1;
+            let $1 = compare4(new$1, next);
+            if ($1 instanceof Lt) {
+              _block$1 = new Ascending();
+            } else if ($1 instanceof Eq) {
+              _block$1 = new Ascending();
+            } else {
+              _block$1 = new Descending();
+            }
+            let direction$1 = _block$1;
+            loop$list = rest$2;
+            loop$compare = compare4;
+            loop$growing = toList([new$1]);
+            loop$direction = direction$1;
+            loop$prev = next;
+            loop$acc = acc$1;
+          }
+        } else if ($ instanceof Eq) {
+          let _block;
+          if (direction instanceof Ascending) {
+            _block = prepend(reverse(growing$1), acc);
+          } else {
+            _block = prepend(growing$1, acc);
+          }
+          let acc$1 = _block;
+          if (rest$1 instanceof Empty) {
+            return prepend(toList([new$1]), acc$1);
+          } else {
+            let next = rest$1.head;
+            let rest$2 = rest$1.tail;
+            let _block$1;
+            let $1 = compare4(new$1, next);
+            if ($1 instanceof Lt) {
+              _block$1 = new Ascending();
+            } else if ($1 instanceof Eq) {
+              _block$1 = new Ascending();
+            } else {
+              _block$1 = new Descending();
+            }
+            let direction$1 = _block$1;
+            loop$list = rest$2;
+            loop$compare = compare4;
+            loop$growing = toList([new$1]);
+            loop$direction = direction$1;
+            loop$prev = next;
+            loop$acc = acc$1;
+          }
+        } else {
+          loop$list = rest$1;
           loop$compare = compare4;
-          loop$growing = toList([new$1]);
-          loop$direction = direction$1;
-          loop$prev = next;
-          loop$acc = acc$1;
+          loop$growing = growing$1;
+          loop$direction = direction;
+          loop$prev = new$1;
+          loop$acc = acc;
         }
       }
     }
@@ -610,33 +614,35 @@ function merge_ascendings(loop$list1, loop$list2, loop$compare, loop$acc) {
     let list22 = loop$list2;
     let compare4 = loop$compare;
     let acc = loop$acc;
-    if (list1.hasLength(0)) {
+    if (list1 instanceof Empty) {
       let list4 = list22;
       return reverse_and_prepend(list4, acc);
-    } else if (list22.hasLength(0)) {
-      let list4 = list1;
-      return reverse_and_prepend(list4, acc);
     } else {
-      let first1 = list1.head;
-      let rest1 = list1.tail;
-      let first2 = list22.head;
-      let rest2 = list22.tail;
-      let $ = compare4(first1, first2);
-      if ($ instanceof Lt) {
-        loop$list1 = rest1;
-        loop$list2 = list22;
-        loop$compare = compare4;
-        loop$acc = prepend(first1, acc);
-      } else if ($ instanceof Gt) {
-        loop$list1 = list1;
-        loop$list2 = rest2;
-        loop$compare = compare4;
-        loop$acc = prepend(first2, acc);
+      if (list22 instanceof Empty) {
+        let list4 = list1;
+        return reverse_and_prepend(list4, acc);
       } else {
-        loop$list1 = list1;
-        loop$list2 = rest2;
-        loop$compare = compare4;
-        loop$acc = prepend(first2, acc);
+        let first1 = list1.head;
+        let rest1 = list1.tail;
+        let first2 = list22.head;
+        let rest2 = list22.tail;
+        let $ = compare4(first1, first2);
+        if ($ instanceof Lt) {
+          loop$list1 = rest1;
+          loop$list2 = list22;
+          loop$compare = compare4;
+          loop$acc = prepend(first1, acc);
+        } else if ($ instanceof Eq) {
+          loop$list1 = list1;
+          loop$list2 = rest2;
+          loop$compare = compare4;
+          loop$acc = prepend(first2, acc);
+        } else {
+          loop$list1 = list1;
+          loop$list2 = rest2;
+          loop$compare = compare4;
+          loop$acc = prepend(first2, acc);
+        }
       }
     }
   }
@@ -646,24 +652,27 @@ function merge_ascending_pairs(loop$sequences, loop$compare, loop$acc) {
     let sequences2 = loop$sequences;
     let compare4 = loop$compare;
     let acc = loop$acc;
-    if (sequences2.hasLength(0)) {
+    if (sequences2 instanceof Empty) {
       return reverse(acc);
-    } else if (sequences2.hasLength(1)) {
-      let sequence = sequences2.head;
-      return reverse(prepend(reverse(sequence), acc));
     } else {
-      let ascending1 = sequences2.head;
-      let ascending2 = sequences2.tail.head;
-      let rest$1 = sequences2.tail.tail;
-      let descending = merge_ascendings(
-        ascending1,
-        ascending2,
-        compare4,
-        toList([])
-      );
-      loop$sequences = rest$1;
-      loop$compare = compare4;
-      loop$acc = prepend(descending, acc);
+      let $ = sequences2.tail;
+      if ($ instanceof Empty) {
+        let sequence = sequences2.head;
+        return reverse(prepend(reverse(sequence), acc));
+      } else {
+        let ascending1 = sequences2.head;
+        let ascending2 = $.head;
+        let rest$1 = $.tail;
+        let descending = merge_ascendings(
+          ascending1,
+          ascending2,
+          compare4,
+          toList([])
+        );
+        loop$sequences = rest$1;
+        loop$compare = compare4;
+        loop$acc = prepend(descending, acc);
+      }
     }
   }
 }
@@ -673,33 +682,35 @@ function merge_descendings(loop$list1, loop$list2, loop$compare, loop$acc) {
     let list22 = loop$list2;
     let compare4 = loop$compare;
     let acc = loop$acc;
-    if (list1.hasLength(0)) {
+    if (list1 instanceof Empty) {
       let list4 = list22;
       return reverse_and_prepend(list4, acc);
-    } else if (list22.hasLength(0)) {
-      let list4 = list1;
-      return reverse_and_prepend(list4, acc);
     } else {
-      let first1 = list1.head;
-      let rest1 = list1.tail;
-      let first2 = list22.head;
-      let rest2 = list22.tail;
-      let $ = compare4(first1, first2);
-      if ($ instanceof Lt) {
-        loop$list1 = list1;
-        loop$list2 = rest2;
-        loop$compare = compare4;
-        loop$acc = prepend(first2, acc);
-      } else if ($ instanceof Gt) {
-        loop$list1 = rest1;
-        loop$list2 = list22;
-        loop$compare = compare4;
-        loop$acc = prepend(first1, acc);
+      if (list22 instanceof Empty) {
+        let list4 = list1;
+        return reverse_and_prepend(list4, acc);
       } else {
-        loop$list1 = rest1;
-        loop$list2 = list22;
-        loop$compare = compare4;
-        loop$acc = prepend(first1, acc);
+        let first1 = list1.head;
+        let rest1 = list1.tail;
+        let first2 = list22.head;
+        let rest2 = list22.tail;
+        let $ = compare4(first1, first2);
+        if ($ instanceof Lt) {
+          loop$list1 = list1;
+          loop$list2 = rest2;
+          loop$compare = compare4;
+          loop$acc = prepend(first2, acc);
+        } else if ($ instanceof Eq) {
+          loop$list1 = rest1;
+          loop$list2 = list22;
+          loop$compare = compare4;
+          loop$acc = prepend(first1, acc);
+        } else {
+          loop$list1 = rest1;
+          loop$list2 = list22;
+          loop$compare = compare4;
+          loop$acc = prepend(first1, acc);
+        }
       }
     }
   }
@@ -709,24 +720,27 @@ function merge_descending_pairs(loop$sequences, loop$compare, loop$acc) {
     let sequences2 = loop$sequences;
     let compare4 = loop$compare;
     let acc = loop$acc;
-    if (sequences2.hasLength(0)) {
+    if (sequences2 instanceof Empty) {
       return reverse(acc);
-    } else if (sequences2.hasLength(1)) {
-      let sequence = sequences2.head;
-      return reverse(prepend(reverse(sequence), acc));
     } else {
-      let descending1 = sequences2.head;
-      let descending2 = sequences2.tail.head;
-      let rest$1 = sequences2.tail.tail;
-      let ascending = merge_descendings(
-        descending1,
-        descending2,
-        compare4,
-        toList([])
-      );
-      loop$sequences = rest$1;
-      loop$compare = compare4;
-      loop$acc = prepend(ascending, acc);
+      let $ = sequences2.tail;
+      if ($ instanceof Empty) {
+        let sequence = sequences2.head;
+        return reverse(prepend(reverse(sequence), acc));
+      } else {
+        let descending1 = sequences2.head;
+        let descending2 = $.head;
+        let rest$1 = $.tail;
+        let ascending = merge_descendings(
+          descending1,
+          descending2,
+          compare4,
+          toList([])
+        );
+        loop$sequences = rest$1;
+        loop$compare = compare4;
+        loop$acc = prepend(ascending, acc);
+      }
     }
   }
 }
@@ -735,65 +749,84 @@ function merge_all(loop$sequences, loop$direction, loop$compare) {
     let sequences2 = loop$sequences;
     let direction = loop$direction;
     let compare4 = loop$compare;
-    if (sequences2.hasLength(0)) {
+    if (sequences2 instanceof Empty) {
       return toList([]);
-    } else if (sequences2.hasLength(1) && direction instanceof Ascending) {
-      let sequence = sequences2.head;
-      return sequence;
-    } else if (sequences2.hasLength(1) && direction instanceof Descending) {
-      let sequence = sequences2.head;
-      return reverse(sequence);
-    } else if (direction instanceof Ascending) {
-      let sequences$1 = merge_ascending_pairs(sequences2, compare4, toList([]));
-      loop$sequences = sequences$1;
-      loop$direction = new Descending();
-      loop$compare = compare4;
     } else {
-      let sequences$1 = merge_descending_pairs(sequences2, compare4, toList([]));
-      loop$sequences = sequences$1;
-      loop$direction = new Ascending();
-      loop$compare = compare4;
+      if (direction instanceof Ascending) {
+        let $ = sequences2.tail;
+        if ($ instanceof Empty) {
+          let sequence = sequences2.head;
+          return sequence;
+        } else {
+          let sequences$1 = merge_ascending_pairs(
+            sequences2,
+            compare4,
+            toList([])
+          );
+          loop$sequences = sequences$1;
+          loop$direction = new Descending();
+          loop$compare = compare4;
+        }
+      } else {
+        let $ = sequences2.tail;
+        if ($ instanceof Empty) {
+          let sequence = sequences2.head;
+          return reverse(sequence);
+        } else {
+          let sequences$1 = merge_descending_pairs(
+            sequences2,
+            compare4,
+            toList([])
+          );
+          loop$sequences = sequences$1;
+          loop$direction = new Ascending();
+          loop$compare = compare4;
+        }
+      }
     }
   }
 }
 function sort(list4, compare4) {
-  if (list4.hasLength(0)) {
+  if (list4 instanceof Empty) {
     return toList([]);
-  } else if (list4.hasLength(1)) {
-    let x = list4.head;
-    return toList([x]);
   } else {
-    let x = list4.head;
-    let y = list4.tail.head;
-    let rest$1 = list4.tail.tail;
-    let _block;
-    let $ = compare4(x, y);
-    if ($ instanceof Lt) {
-      _block = new Ascending();
-    } else if ($ instanceof Eq) {
-      _block = new Ascending();
+    let $ = list4.tail;
+    if ($ instanceof Empty) {
+      let x = list4.head;
+      return toList([x]);
     } else {
-      _block = new Descending();
+      let x = list4.head;
+      let y = $.head;
+      let rest$1 = $.tail;
+      let _block;
+      let $1 = compare4(x, y);
+      if ($1 instanceof Lt) {
+        _block = new Ascending();
+      } else if ($1 instanceof Eq) {
+        _block = new Ascending();
+      } else {
+        _block = new Descending();
+      }
+      let direction = _block;
+      let sequences$1 = sequences(
+        rest$1,
+        compare4,
+        toList([x]),
+        direction,
+        y,
+        toList([])
+      );
+      return merge_all(sequences$1, new Ascending(), compare4);
     }
-    let direction = _block;
-    let sequences$1 = sequences(
-      rest$1,
-      compare4,
-      toList([x]),
-      direction,
-      y,
-      toList([])
-    );
-    return merge_all(sequences$1, new Ascending(), compare4);
   }
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
 function is_ok(result) {
-  if (!result.isOk()) {
-    return false;
-  } else {
+  if (result instanceof Ok) {
     return true;
+  } else {
+    return false;
   }
 }
 
@@ -1590,13 +1623,13 @@ function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
     let strings = loop$strings;
     let accumulator = loop$accumulator;
-    if (strings.atLeastLength(1)) {
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
       let string5 = strings.head;
       let strings$1 = strings.tail;
       loop$strings = strings$1;
       loop$accumulator = accumulator + string5;
-    } else {
-      return accumulator;
     }
   }
 }
@@ -1660,7 +1693,7 @@ function run(data, decoder) {
   let $ = decoder.function(data);
   let maybe_invalid_data = $[0];
   let errors = $[1];
-  if (errors.hasLength(0)) {
+  if (errors instanceof Empty) {
     return new Ok(maybe_invalid_data);
   } else {
     return new Error(errors);
@@ -1686,7 +1719,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     let data = loop$data;
     let failure2 = loop$failure;
     let decoders = loop$decoders;
-    if (decoders.hasLength(0)) {
+    if (decoders instanceof Empty) {
       return failure2;
     } else {
       let decoder = decoders.head;
@@ -1694,7 +1727,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
       let $ = decoder.function(data);
       let layer = $;
       let errors = $[1];
-      if (errors.hasLength(0)) {
+      if (errors instanceof Empty) {
         return layer;
       } else {
         loop$data = data;
@@ -1710,7 +1743,7 @@ function one_of(first, alternatives) {
       let $ = first.function(dynamic_data);
       let layer = $;
       let errors = $[1];
-      if (errors.hasLength(0)) {
+      if (errors instanceof Empty) {
         return layer;
       } else {
         return run_decoders(dynamic_data, layer, alternatives);
@@ -1725,7 +1758,7 @@ function decode_error(expected, found) {
 }
 function run_dynamic_function(data, name, f) {
   let $ = f(data);
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let data$1 = $[0];
     return [data$1, toList([])];
   } else {
@@ -1778,7 +1811,7 @@ function push_path(layer, path) {
     (key) => {
       let key$1 = identity(key);
       let $ = run(key$1, decoder);
-      if ($.isOk()) {
+      if ($ instanceof Ok) {
         let key$2 = $[0];
         return key$2;
       } else {
@@ -1806,22 +1839,25 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
     let inner = loop$inner;
     let data = loop$data;
     let handle_miss = loop$handle_miss;
-    if (path.hasLength(0)) {
+    if (path instanceof Empty) {
       let _pipe = inner(data);
       return push_path(_pipe, reverse(position));
     } else {
       let key = path.head;
       let path$1 = path.tail;
       let $ = index2(data, key);
-      if ($.isOk() && $[0] instanceof Some) {
-        let data$1 = $[0][0];
-        loop$path = path$1;
-        loop$position = prepend(key, position);
-        loop$inner = inner;
-        loop$data = data$1;
-        loop$handle_miss = handle_miss;
-      } else if ($.isOk() && $[0] instanceof None) {
-        return handle_miss(data, prepend(key, position));
+      if ($ instanceof Ok) {
+        let $1 = $[0];
+        if ($1 instanceof Some) {
+          let data$1 = $1[0];
+          loop$path = path$1;
+          loop$position = prepend(key, position);
+          loop$inner = inner;
+          loop$data = data$1;
+          loop$handle_miss = handle_miss;
+        } else {
+          return handle_miss(data, prepend(key, position));
+        }
       } else {
         let kind = $[0];
         let $1 = inner(data);
@@ -1966,12 +2002,12 @@ function size(node) {
   if (node instanceof Balanced) {
     let size$1 = node.size;
     return size$1;
-  } else if (node instanceof Leaf) {
-    let children = node.children;
-    return length2(children);
-  } else {
+  } else if (node instanceof Unbalanced) {
     let sizes = node.sizes;
     return get1(length2(sizes), sizes);
+  } else {
+    let children = node.children;
+    return length2(children);
   }
 }
 function compute_sizes(nodes) {
@@ -2171,131 +2207,195 @@ function direct_append_balanced(left_shift, left, left_children, right_shift, ri
     let updated = $.merged;
     let children = set1(left_len, left_children, updated);
     return new Concatenated(balanced(left_shift, children));
-  } else if ($ instanceof NoFreeSlot && left_len < 32) {
-    let node = $.right;
-    let children = append3(left_children, node);
-    let $1 = size(left_last) === bsl(1, left_shift);
-    if ($1) {
-      return new Concatenated(balanced(left_shift, children));
-    } else {
-      return new Concatenated(unbalanced(left_shift, children));
-    }
   } else {
-    let node = $.right;
-    return new NoFreeSlot(left, balanced(left_shift, singleton(node)));
+    if (left_len < 32) {
+      let node = $.right;
+      let children = append3(left_children, node);
+      let $1 = size(left_last) === bsl(1, left_shift);
+      if ($1) {
+        return new Concatenated(balanced(left_shift, children));
+      } else {
+        return new Concatenated(unbalanced(left_shift, children));
+      }
+    } else {
+      let node = $.right;
+      return new NoFreeSlot(left, balanced(left_shift, singleton(node)));
+    }
   }
 }
 function direct_concat(left_shift, left, right_shift, right) {
-  if (left instanceof Balanced && right instanceof Leaf) {
-    let cl = left.children;
-    return direct_append_balanced(left_shift, left, cl, right_shift, right);
-  } else if (left instanceof Unbalanced && right instanceof Leaf) {
-    let sizes = left.sizes;
-    let cl = left.children;
-    return direct_append_unbalanced(
-      left_shift,
-      left,
-      cl,
-      sizes,
-      right_shift,
-      right
-    );
-  } else if (left instanceof Leaf && right instanceof Balanced) {
-    let cr = right.children;
-    return direct_prepend_balanced(left_shift, left, right_shift, right, cr);
-  } else if (left instanceof Leaf && right instanceof Unbalanced) {
-    let sr = right.sizes;
-    let cr = right.children;
-    return direct_prepend_unbalanced(
-      left_shift,
-      left,
-      right_shift,
-      right,
-      cr,
-      sr
-    );
-  } else if (left instanceof Leaf && right instanceof Leaf) {
-    let cl = left.children;
-    let cr = right.children;
-    let $ = length2(cl) + length2(cr) <= branch_factor;
-    if ($) {
-      return new Concatenated(new Leaf(concat3(cl, cr)));
-    } else {
-      return new NoFreeSlot(left, right);
-    }
-  } else if (left instanceof Balanced && left_shift > right_shift) {
-    let cl = left.children;
-    return direct_append_balanced(left_shift, left, cl, right_shift, right);
-  } else if (left instanceof Unbalanced && left_shift > right_shift) {
-    let sizes = left.sizes;
-    let cl = left.children;
-    return direct_append_unbalanced(
-      left_shift,
-      left,
-      cl,
-      sizes,
-      right_shift,
-      right
-    );
-  } else if (right instanceof Balanced && right_shift > left_shift) {
-    let cr = right.children;
-    return direct_prepend_balanced(left_shift, left, right_shift, right, cr);
-  } else if (right instanceof Unbalanced && right_shift > left_shift) {
-    let sr = right.sizes;
-    let cr = right.children;
-    return direct_prepend_unbalanced(
-      left_shift,
-      left,
-      right_shift,
-      right,
-      cr,
-      sr
-    );
-  } else if (left instanceof Balanced && right instanceof Balanced) {
-    let cl = left.children;
-    let cr = right.children;
-    let $ = length2(cl) + length2(cr) <= branch_factor;
-    if ($) {
-      let merged = concat3(cl, cr);
-      let left_last = get1(length2(cl), cl);
-      let $1 = size(left_last) === bsl(1, left_shift);
-      if ($1) {
-        return new Concatenated(balanced(left_shift, merged));
+  if (right instanceof Balanced) {
+    if (left instanceof Balanced) {
+      if (left_shift > right_shift) {
+        let cl = left.children;
+        return direct_append_balanced(left_shift, left, cl, right_shift, right);
       } else {
-        return new Concatenated(unbalanced(left_shift, merged));
+        if (right_shift > left_shift) {
+          let cr = right.children;
+          return direct_prepend_balanced(
+            left_shift,
+            left,
+            right_shift,
+            right,
+            cr
+          );
+        } else {
+          let cr = right.children;
+          let cl = left.children;
+          let $ = length2(cl) + length2(cr) <= branch_factor;
+          if ($) {
+            let merged = concat3(cl, cr);
+            let left_last = get1(length2(cl), cl);
+            let $1 = size(left_last) === bsl(1, left_shift);
+            if ($1) {
+              return new Concatenated(balanced(left_shift, merged));
+            } else {
+              return new Concatenated(unbalanced(left_shift, merged));
+            }
+          } else {
+            return new NoFreeSlot(left, right);
+          }
+        }
+      }
+    } else if (left instanceof Unbalanced) {
+      if (left_shift > right_shift) {
+        let sizes = left.sizes;
+        let cl = left.children;
+        return direct_append_unbalanced(
+          left_shift,
+          left,
+          cl,
+          sizes,
+          right_shift,
+          right
+        );
+      } else {
+        if (right_shift > left_shift) {
+          let cr = right.children;
+          return direct_prepend_balanced(
+            left_shift,
+            left,
+            right_shift,
+            right,
+            cr
+          );
+        } else {
+          let cr = right.children;
+          let cl = left.children;
+          let $ = length2(cl) + length2(cr) <= branch_factor;
+          if ($) {
+            let merged = concat3(cl, cr);
+            return new Concatenated(unbalanced(left_shift, merged));
+          } else {
+            return new NoFreeSlot(left, right);
+          }
+        }
       }
     } else {
-      return new NoFreeSlot(left, right);
+      let cr = right.children;
+      return direct_prepend_balanced(left_shift, left, right_shift, right, cr);
     }
-  } else if (left instanceof Balanced && right instanceof Unbalanced) {
-    let cl = left.children;
-    let cr = right.children;
-    let $ = length2(cl) + length2(cr) <= branch_factor;
-    if ($) {
-      let merged = concat3(cl, cr);
-      return new Concatenated(unbalanced(left_shift, merged));
+  } else if (right instanceof Unbalanced) {
+    if (left instanceof Balanced) {
+      if (left_shift > right_shift) {
+        let cl = left.children;
+        return direct_append_balanced(left_shift, left, cl, right_shift, right);
+      } else {
+        if (right_shift > left_shift) {
+          let sr = right.sizes;
+          let cr = right.children;
+          return direct_prepend_unbalanced(
+            left_shift,
+            left,
+            right_shift,
+            right,
+            cr,
+            sr
+          );
+        } else {
+          let cr = right.children;
+          let cl = left.children;
+          let $ = length2(cl) + length2(cr) <= branch_factor;
+          if ($) {
+            let merged = concat3(cl, cr);
+            return new Concatenated(unbalanced(left_shift, merged));
+          } else {
+            return new NoFreeSlot(left, right);
+          }
+        }
+      }
+    } else if (left instanceof Unbalanced) {
+      if (left_shift > right_shift) {
+        let sizes = left.sizes;
+        let cl = left.children;
+        return direct_append_unbalanced(
+          left_shift,
+          left,
+          cl,
+          sizes,
+          right_shift,
+          right
+        );
+      } else {
+        if (right_shift > left_shift) {
+          let sr = right.sizes;
+          let cr = right.children;
+          return direct_prepend_unbalanced(
+            left_shift,
+            left,
+            right_shift,
+            right,
+            cr,
+            sr
+          );
+        } else {
+          let cr = right.children;
+          let cl = left.children;
+          let $ = length2(cl) + length2(cr) <= branch_factor;
+          if ($) {
+            let merged = concat3(cl, cr);
+            return new Concatenated(unbalanced(left_shift, merged));
+          } else {
+            return new NoFreeSlot(left, right);
+          }
+        }
+      }
     } else {
-      return new NoFreeSlot(left, right);
-    }
-  } else if (left instanceof Unbalanced && right instanceof Balanced) {
-    let cl = left.children;
-    let cr = right.children;
-    let $ = length2(cl) + length2(cr) <= branch_factor;
-    if ($) {
-      let merged = concat3(cl, cr);
-      return new Concatenated(unbalanced(left_shift, merged));
-    } else {
-      return new NoFreeSlot(left, right);
+      let sr = right.sizes;
+      let cr = right.children;
+      return direct_prepend_unbalanced(
+        left_shift,
+        left,
+        right_shift,
+        right,
+        cr,
+        sr
+      );
     }
   } else {
-    let cl = left.children;
-    let cr = right.children;
-    let $ = length2(cl) + length2(cr) <= branch_factor;
-    if ($) {
-      let merged = concat3(cl, cr);
-      return new Concatenated(unbalanced(left_shift, merged));
+    if (left instanceof Balanced) {
+      let cl = left.children;
+      return direct_append_balanced(left_shift, left, cl, right_shift, right);
+    } else if (left instanceof Unbalanced) {
+      let sizes = left.sizes;
+      let cl = left.children;
+      return direct_append_unbalanced(
+        left_shift,
+        left,
+        cl,
+        sizes,
+        right_shift,
+        right
+      );
     } else {
-      return new NoFreeSlot(left, right);
+      let cr = right.children;
+      let cl = left.children;
+      let $ = length2(cl) + length2(cr) <= branch_factor;
+      if ($) {
+        return new Concatenated(new Leaf(concat3(cl, cr)));
+      } else {
+        return new NoFreeSlot(left, right);
+      }
     }
   }
 }
@@ -2309,17 +2409,19 @@ function direct_append_unbalanced(left_shift, left, left_children, sizes, right_
     let last_size = get1(left_len, sizes) + size(updated);
     let sizes$1 = set1(left_len, sizes, last_size);
     return new Concatenated(new Unbalanced(sizes$1, children));
-  } else if ($ instanceof NoFreeSlot && left_len < 32) {
-    let node = $.right;
-    let children = append3(left_children, node);
-    let sizes$1 = append3(
-      sizes,
-      get1(left_len, sizes) + size(node)
-    );
-    return new Concatenated(new Unbalanced(sizes$1, children));
   } else {
-    let node = $.right;
-    return new NoFreeSlot(left, balanced(left_shift, singleton(node)));
+    if (left_len < 32) {
+      let node = $.right;
+      let children = append3(left_children, node);
+      let sizes$1 = append3(
+        sizes,
+        get1(left_len, sizes) + size(node)
+      );
+      return new Concatenated(new Unbalanced(sizes$1, children));
+    } else {
+      let node = $.right;
+      return new NoFreeSlot(left, balanced(left_shift, singleton(node)));
+    }
   }
 }
 function direct_prepend_balanced(left_shift, left, right_shift, right, right_children) {
@@ -2335,13 +2437,18 @@ function direct_prepend_balanced(left_shift, left, right_shift, right, right_chi
     let updated = $.merged;
     let children = set1(1, right_children, updated);
     return new Concatenated(unbalanced(right_shift, children));
-  } else if ($ instanceof NoFreeSlot && right_len < 32) {
-    let node = $.left;
-    let children = prepend2(right_children, node);
-    return new Concatenated(unbalanced(right_shift, children));
   } else {
-    let node = $.left;
-    return new NoFreeSlot(balanced(right_shift, singleton(node)), right);
+    if (right_len < 32) {
+      let node = $.left;
+      let children = prepend2(right_children, node);
+      return new Concatenated(unbalanced(right_shift, children));
+    } else {
+      let node = $.left;
+      return new NoFreeSlot(
+        balanced(right_shift, singleton(node)),
+        right
+      );
+    }
   }
 }
 function direct_prepend_unbalanced(left_shift, left, right_shift, right, right_children, sizes) {
@@ -2361,21 +2468,26 @@ function direct_prepend_unbalanced(left_shift, left, right_shift, right, right_c
       return s + size_delta;
     });
     return new Concatenated(new Unbalanced(sizes$1, children));
-  } else if ($ instanceof NoFreeSlot && right_len < 32) {
-    let node = $.left;
-    let children = prepend2(right_children, node);
-    let size$1 = size(node);
-    let _block;
-    let _pipe = sizes;
-    let _pipe$1 = map4(_pipe, (s) => {
-      return s + size$1;
-    });
-    _block = prepend2(_pipe$1, size$1);
-    let sizes$1 = _block;
-    return new Concatenated(new Unbalanced(sizes$1, children));
   } else {
-    let node = $.left;
-    return new NoFreeSlot(balanced(right_shift, singleton(node)), right);
+    if (right_len < 32) {
+      let node = $.left;
+      let children = prepend2(right_children, node);
+      let size$1 = size(node);
+      let _block;
+      let _pipe = sizes;
+      let _pipe$1 = map4(_pipe, (s) => {
+        return s + size$1;
+      });
+      _block = prepend2(_pipe$1, size$1);
+      let sizes$1 = _block;
+      return new Concatenated(new Unbalanced(sizes$1, children));
+    } else {
+      let node = $.left;
+      return new NoFreeSlot(
+        balanced(right_shift, singleton(node)),
+        right
+      );
+    }
   }
 }
 
@@ -2407,7 +2519,9 @@ function wrap(item) {
   return new Array2(0, leaf(singleton(item)));
 }
 function get2(array4, index4) {
-  if (array4 instanceof Array2) {
+  if (array4 instanceof Empty2) {
+    return new Error(void 0);
+  } else {
     let shift = array4.shift;
     let root3 = array4.root;
     let $ = 0 <= index4 && index4 < size(root3);
@@ -2416,12 +2530,12 @@ function get2(array4, index4) {
     } else {
       return new Error(void 0);
     }
-  } else {
-    return new Error(void 0);
   }
 }
 function try_update(array4, index4, fun) {
-  if (array4 instanceof Array2) {
+  if (array4 instanceof Empty2) {
+    return array4;
+  } else {
     let shift = array4.shift;
     let root3 = array4.root;
     let $ = 0 <= index4 && index4 < size(root3);
@@ -2430,8 +2544,6 @@ function try_update(array4, index4, fun) {
     } else {
       return array4;
     }
-  } else {
-    return array4;
   }
 }
 function try_set(array4, index4, item) {
@@ -2442,29 +2554,31 @@ function try_set(array4, index4, item) {
 function direct_concat2(left, right) {
   if (left instanceof Empty2) {
     return right;
-  } else if (right instanceof Empty2) {
-    return left;
   } else {
-    let left_shift = left.shift;
-    let left$1 = left.root;
-    let right_shift = right.shift;
-    let right$1 = right.root;
-    let _block;
-    let $ = left_shift > right_shift;
-    if ($) {
-      _block = left_shift;
+    if (right instanceof Empty2) {
+      return left;
     } else {
-      _block = right_shift;
-    }
-    let shift = _block;
-    let $1 = direct_concat(left_shift, left$1, right_shift, right$1);
-    if ($1 instanceof Concatenated) {
-      let root3 = $1.merged;
-      return new Array2(shift, root3);
-    } else {
-      let left$2 = $1.left;
-      let right$2 = $1.right;
-      return array(shift, pair(left$2, right$2));
+      let left_shift = left.shift;
+      let left$1 = left.root;
+      let right_shift = right.shift;
+      let right$1 = right.root;
+      let _block;
+      let $ = left_shift > right_shift;
+      if ($) {
+        _block = left_shift;
+      } else {
+        _block = right_shift;
+      }
+      let shift = _block;
+      let $1 = direct_concat(left_shift, left$1, right_shift, right$1);
+      if ($1 instanceof Concatenated) {
+        let root3 = $1.merged;
+        return new Array2(shift, root3);
+      } else {
+        let left$2 = $1.left;
+        let right$2 = $1.right;
+        return array(shift, pair(left$2, right$2));
+      }
     }
   }
 }
@@ -2609,63 +2723,135 @@ var Throttle = class extends CustomType {
   }
 };
 function limit_equals(a2, b) {
-  if (a2 instanceof NoLimit && b instanceof NoLimit) {
-    return true;
-  } else if (a2 instanceof Debounce && b instanceof Debounce && a2.delay === b.delay) {
-    let d1 = a2.delay;
-    let d2 = b.delay;
-    return true;
-  } else if (a2 instanceof Throttle && b instanceof Throttle && a2.delay === b.delay) {
-    let d1 = a2.delay;
-    let d2 = b.delay;
-    return true;
+  if (b instanceof NoLimit) {
+    if (a2 instanceof NoLimit) {
+      return true;
+    } else {
+      return false;
+    }
+  } else if (b instanceof Debounce) {
+    if (a2 instanceof Debounce) {
+      let d2 = b.delay;
+      let d1 = a2.delay;
+      if (d1 === d2) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   } else {
-    return false;
+    if (a2 instanceof Throttle) {
+      let d2 = b.delay;
+      let d1 = a2.delay;
+      if (d1 === d2) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 }
 function merge(loop$attributes, loop$merged) {
   while (true) {
     let attributes = loop$attributes;
     let merged = loop$merged;
-    if (attributes.hasLength(0)) {
+    if (attributes instanceof Empty) {
       return merged;
-    } else if (attributes.atLeastLength(2) && attributes.head instanceof Attribute && attributes.head.name === "class" && attributes.tail.head instanceof Attribute && attributes.tail.head.name === "class") {
-      let kind = attributes.head.kind;
-      let class1 = attributes.head.value;
-      let class2 = attributes.tail.head.value;
-      let rest = attributes.tail.tail;
-      let value2 = class1 + " " + class2;
-      let attribute$1 = new Attribute(kind, "class", value2);
-      loop$attributes = prepend(attribute$1, rest);
-      loop$merged = merged;
-    } else if (attributes.atLeastLength(2) && attributes.head instanceof Attribute && attributes.head.name === "style" && attributes.tail.head instanceof Attribute && attributes.tail.head.name === "style") {
-      let kind = attributes.head.kind;
-      let style1 = attributes.head.value;
-      let style2 = attributes.tail.head.value;
-      let rest = attributes.tail.tail;
-      let value2 = style1 + ";" + style2;
-      let attribute$1 = new Attribute(kind, "style", value2);
-      loop$attributes = prepend(attribute$1, rest);
-      loop$merged = merged;
     } else {
-      let attribute$1 = attributes.head;
-      let rest = attributes.tail;
-      loop$attributes = rest;
-      loop$merged = prepend(attribute$1, merged);
+      let $ = attributes.tail;
+      if ($ instanceof Empty) {
+        let attribute$1 = attributes.head;
+        let rest = $;
+        loop$attributes = rest;
+        loop$merged = prepend(attribute$1, merged);
+      } else {
+        let $1 = $.head;
+        if ($1 instanceof Attribute) {
+          let $2 = $1.name;
+          if ($2 === "class") {
+            let $3 = attributes.head;
+            if ($3 instanceof Attribute) {
+              let $4 = $3.name;
+              if ($4 === "class") {
+                let rest = $.tail;
+                let class2 = $1.value;
+                let kind = $3.kind;
+                let class1 = $3.value;
+                let value2 = class1 + " " + class2;
+                let attribute$1 = new Attribute(kind, "class", value2);
+                loop$attributes = prepend(attribute$1, rest);
+                loop$merged = merged;
+              } else {
+                let attribute$1 = $3;
+                let rest = $;
+                loop$attributes = rest;
+                loop$merged = prepend(attribute$1, merged);
+              }
+            } else {
+              let attribute$1 = $3;
+              let rest = $;
+              loop$attributes = rest;
+              loop$merged = prepend(attribute$1, merged);
+            }
+          } else if ($2 === "style") {
+            let $3 = attributes.head;
+            if ($3 instanceof Attribute) {
+              let $4 = $3.name;
+              if ($4 === "style") {
+                let rest = $.tail;
+                let style2 = $1.value;
+                let kind = $3.kind;
+                let style1 = $3.value;
+                let value2 = style1 + ";" + style2;
+                let attribute$1 = new Attribute(kind, "style", value2);
+                loop$attributes = prepend(attribute$1, rest);
+                loop$merged = merged;
+              } else {
+                let attribute$1 = $3;
+                let rest = $;
+                loop$attributes = rest;
+                loop$merged = prepend(attribute$1, merged);
+              }
+            } else {
+              let attribute$1 = $3;
+              let rest = $;
+              loop$attributes = rest;
+              loop$merged = prepend(attribute$1, merged);
+            }
+          } else {
+            let attribute$1 = attributes.head;
+            let rest = $;
+            loop$attributes = rest;
+            loop$merged = prepend(attribute$1, merged);
+          }
+        } else {
+          let attribute$1 = attributes.head;
+          let rest = $;
+          loop$attributes = rest;
+          loop$merged = prepend(attribute$1, merged);
+        }
+      }
     }
   }
 }
 function prepare(attributes) {
-  if (attributes.hasLength(0)) {
-    return attributes;
-  } else if (attributes.hasLength(1)) {
+  if (attributes instanceof Empty) {
     return attributes;
   } else {
-    let _pipe = attributes;
-    let _pipe$1 = sort(_pipe, (a2, b) => {
-      return compare3(b, a2);
-    });
-    return merge(_pipe$1, empty_list);
+    let $ = attributes.tail;
+    if ($ instanceof Empty) {
+      return attributes;
+    } else {
+      let _pipe = attributes;
+      let _pipe$1 = sort(_pipe, (a2, b) => {
+        return compare3(b, a2);
+      });
+      return merge(_pipe$1, empty_list);
+    }
   }
 }
 var attribute_kind = 0;
@@ -2719,16 +2905,19 @@ function do_classes(loop$names, loop$class) {
   while (true) {
     let names = loop$names;
     let class$2 = loop$class;
-    if (names.hasLength(0)) {
+    if (names instanceof Empty) {
       return class$2;
-    } else if (names.atLeastLength(1) && names.head[1]) {
-      let name$1 = names.head[0];
-      let rest = names.tail;
-      return class$2 + name$1 + " " + do_classes(rest, class$2);
     } else {
-      let rest = names.tail;
-      loop$names = rest;
-      loop$class = class$2;
+      let $ = names.head[1];
+      if ($) {
+        let rest = names.tail;
+        let name$1 = names.head[0];
+        return class$2 + name$1 + " " + do_classes(rest, class$2);
+      } else {
+        let rest = names.tail;
+        loop$names = rest;
+        loop$class = class$2;
+      }
     }
   }
 }
@@ -2741,10 +2930,12 @@ function id(value2) {
 function style(property3, value2) {
   if (property3 === "") {
     return class$("");
-  } else if (value2 === "") {
-    return class$("");
   } else {
-    return attribute2("style", property3 + ":" + value2 + ";");
+    if (value2 === "") {
+      return class$("");
+    } else {
+      return attribute2("style", property3 + ":" + value2 + ";");
+    }
   }
 }
 function href(url) {
@@ -2835,7 +3026,7 @@ function do_matches(loop$path, loop$candidates) {
   while (true) {
     let path = loop$path;
     let candidates = loop$candidates;
-    if (candidates.hasLength(0)) {
+    if (candidates instanceof Empty) {
       return false;
     } else {
       let candidate = candidates.head;
@@ -2865,7 +3056,7 @@ function do_to_string(loop$path, loop$acc) {
     let path = loop$path;
     let acc = loop$acc;
     if (path instanceof Root) {
-      if (acc.hasLength(0)) {
+      if (acc instanceof Empty) {
         return "";
       } else {
         let segments = acc.tail;
@@ -2891,7 +3082,7 @@ function to_string2(path) {
   return do_to_string(path, toList([]));
 }
 function matches(path, candidates) {
-  if (candidates.hasLength(0)) {
+  if (candidates instanceof Empty) {
     return false;
   } else {
     return do_matches(to_string2(path), candidates);
@@ -3033,99 +3224,107 @@ function set_fragment_key(loop$key, loop$children, loop$index, loop$new_children
     let index4 = loop$index;
     let new_children = loop$new_children;
     let keyed_children = loop$keyed_children;
-    if (children.hasLength(0)) {
+    if (children instanceof Empty) {
       return [reverse(new_children), keyed_children];
-    } else if (children.atLeastLength(1) && children.head instanceof Fragment && children.head.key === "") {
-      let node = children.head;
-      let children$1 = children.tail;
-      let child_key = key + "::" + to_string(index4);
-      let $ = set_fragment_key(
-        child_key,
-        node.children,
-        0,
-        empty_list,
-        empty4()
-      );
-      let node_children = $[0];
-      let node_keyed_children = $[1];
-      let _block;
-      let _record = node;
-      _block = new Fragment(
-        _record.kind,
-        _record.key,
-        _record.mapper,
-        node_children,
-        node_keyed_children,
-        _record.children_count
-      );
-      let new_node = _block;
-      let new_children$1 = prepend(new_node, new_children);
-      let index$1 = index4 + 1;
-      loop$key = key;
-      loop$children = children$1;
-      loop$index = index$1;
-      loop$new_children = new_children$1;
-      loop$keyed_children = keyed_children;
-    } else if (children.atLeastLength(1) && children.head.key !== "") {
-      let node = children.head;
-      let children$1 = children.tail;
-      let child_key = key + "::" + node.key;
-      let keyed_node = to_keyed(child_key, node);
-      let new_children$1 = prepend(keyed_node, new_children);
-      let keyed_children$1 = insert3(
-        keyed_children,
-        child_key,
-        keyed_node
-      );
-      let index$1 = index4 + 1;
-      loop$key = key;
-      loop$children = children$1;
-      loop$index = index$1;
-      loop$new_children = new_children$1;
-      loop$keyed_children = keyed_children$1;
     } else {
-      let node = children.head;
-      let children$1 = children.tail;
-      let new_children$1 = prepend(node, new_children);
-      let index$1 = index4 + 1;
-      loop$key = key;
-      loop$children = children$1;
-      loop$index = index$1;
-      loop$new_children = new_children$1;
-      loop$keyed_children = keyed_children;
+      let $ = children.head;
+      if ($ instanceof Fragment) {
+        let node = $;
+        if (node.key === "") {
+          let children$1 = children.tail;
+          let child_key = key + "::" + to_string(index4);
+          let $1 = set_fragment_key(
+            child_key,
+            node.children,
+            0,
+            empty_list,
+            empty4()
+          );
+          let node_children = $1[0];
+          let node_keyed_children = $1[1];
+          let _block;
+          let _record = node;
+          _block = new Fragment(
+            _record.kind,
+            _record.key,
+            _record.mapper,
+            node_children,
+            node_keyed_children,
+            _record.children_count
+          );
+          let new_node = _block;
+          let new_children$1 = prepend(new_node, new_children);
+          let index$1 = index4 + 1;
+          loop$key = key;
+          loop$children = children$1;
+          loop$index = index$1;
+          loop$new_children = new_children$1;
+          loop$keyed_children = keyed_children;
+        } else {
+          let node$1 = $;
+          if (node$1.key !== "") {
+            let children$1 = children.tail;
+            let child_key = key + "::" + node$1.key;
+            let keyed_node = to_keyed(child_key, node$1);
+            let new_children$1 = prepend(keyed_node, new_children);
+            let keyed_children$1 = insert3(
+              keyed_children,
+              child_key,
+              keyed_node
+            );
+            let index$1 = index4 + 1;
+            loop$key = key;
+            loop$children = children$1;
+            loop$index = index$1;
+            loop$new_children = new_children$1;
+            loop$keyed_children = keyed_children$1;
+          } else {
+            let node$2 = $;
+            let children$1 = children.tail;
+            let new_children$1 = prepend(node$2, new_children);
+            let index$1 = index4 + 1;
+            loop$key = key;
+            loop$children = children$1;
+            loop$index = index$1;
+            loop$new_children = new_children$1;
+            loop$keyed_children = keyed_children;
+          }
+        }
+      } else {
+        let node = $;
+        if (node.key !== "") {
+          let children$1 = children.tail;
+          let child_key = key + "::" + node.key;
+          let keyed_node = to_keyed(child_key, node);
+          let new_children$1 = prepend(keyed_node, new_children);
+          let keyed_children$1 = insert3(
+            keyed_children,
+            child_key,
+            keyed_node
+          );
+          let index$1 = index4 + 1;
+          loop$key = key;
+          loop$children = children$1;
+          loop$index = index$1;
+          loop$new_children = new_children$1;
+          loop$keyed_children = keyed_children$1;
+        } else {
+          let node$1 = $;
+          let children$1 = children.tail;
+          let new_children$1 = prepend(node$1, new_children);
+          let index$1 = index4 + 1;
+          loop$key = key;
+          loop$children = children$1;
+          loop$index = index$1;
+          loop$new_children = new_children$1;
+          loop$keyed_children = keyed_children;
+        }
+      }
     }
   }
 }
 function to_keyed(key, node) {
-  if (node instanceof Element) {
-    let _record = node;
-    return new Element(
-      _record.kind,
-      key,
-      _record.mapper,
-      _record.namespace,
-      _record.tag,
-      _record.attributes,
-      _record.children,
-      _record.keyed_children,
-      _record.self_closing,
-      _record.void
-    );
-  } else if (node instanceof Text) {
-    let _record = node;
-    return new Text(_record.kind, key, _record.mapper, _record.content);
-  } else if (node instanceof UnsafeInnerHtml) {
-    let _record = node;
-    return new UnsafeInnerHtml(
-      _record.kind,
-      key,
-      _record.mapper,
-      _record.namespace,
-      _record.tag,
-      _record.attributes,
-      _record.inner_html
-    );
-  } else {
+  if (node instanceof Fragment) {
     let children = node.children;
     let $ = set_fragment_key(
       key,
@@ -3144,6 +3343,34 @@ function to_keyed(key, node) {
       children$1,
       keyed_children,
       _record.children_count
+    );
+  } else if (node instanceof Element) {
+    let _record = node;
+    return new Element(
+      _record.kind,
+      key,
+      _record.mapper,
+      _record.namespace,
+      _record.tag,
+      _record.attributes,
+      _record.children,
+      _record.keyed_children,
+      _record.self_closing,
+      _record.void
+    );
+  } else if (node instanceof Text) {
+    let _record = node;
+    return new Text(_record.kind, key, _record.mapper, _record.content);
+  } else {
+    let _record = node;
+    return new UnsafeInnerHtml(
+      _record.kind,
+      key,
+      _record.mapper,
+      _record.namespace,
+      _record.tag,
+      _record.attributes,
+      _record.inner_html
     );
   }
 }
@@ -3275,12 +3502,24 @@ var AttributeChange = class extends CustomType {
   }
 };
 function is_controlled(events, namespace, tag, path) {
-  if (tag === "input" && namespace === "") {
-    return has_dispatched_events(events, path);
-  } else if (tag === "select" && namespace === "") {
-    return has_dispatched_events(events, path);
-  } else if (tag === "textarea" && namespace === "") {
-    return has_dispatched_events(events, path);
+  if (tag === "input") {
+    if (namespace === "") {
+      return has_dispatched_events(events, path);
+    } else {
+      return false;
+    }
+  } else if (tag === "select") {
+    if (namespace === "") {
+      return has_dispatched_events(events, path);
+    } else {
+      return false;
+    }
+  } else if (tag === "textarea") {
+    if (namespace === "") {
+      return has_dispatched_events(events, path);
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
@@ -3295,233 +3534,297 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
     let new$11 = loop$new;
     let added = loop$added;
     let removed = loop$removed;
-    if (old.hasLength(0) && new$11.hasLength(0)) {
-      return new AttributeChange(added, removed, events);
-    } else if (old.atLeastLength(1) && old.head instanceof Event2 && new$11.hasLength(0)) {
-      let prev = old.head;
-      let name = old.head.name;
-      let old$1 = old.tail;
-      let removed$1 = prepend(prev, removed);
-      let events$1 = remove_event(events, path, name);
-      loop$controlled = controlled;
-      loop$path = path;
-      loop$mapper = mapper;
-      loop$events = events$1;
-      loop$old = old$1;
-      loop$new = new$11;
-      loop$added = added;
-      loop$removed = removed$1;
-    } else if (old.atLeastLength(1) && new$11.hasLength(0)) {
-      let prev = old.head;
-      let old$1 = old.tail;
-      let removed$1 = prepend(prev, removed);
-      loop$controlled = controlled;
-      loop$path = path;
-      loop$mapper = mapper;
-      loop$events = events;
-      loop$old = old$1;
-      loop$new = new$11;
-      loop$added = added;
-      loop$removed = removed$1;
-    } else if (old.hasLength(0) && new$11.atLeastLength(1) && new$11.head instanceof Event2) {
-      let next = new$11.head;
-      let name = new$11.head.name;
-      let handler = new$11.head.handler;
-      let new$1 = new$11.tail;
-      let added$1 = prepend(next, added);
-      let events$1 = add_event(events, mapper, path, name, handler);
-      loop$controlled = controlled;
-      loop$path = path;
-      loop$mapper = mapper;
-      loop$events = events$1;
-      loop$old = old;
-      loop$new = new$1;
-      loop$added = added$1;
-      loop$removed = removed;
-    } else if (old.hasLength(0) && new$11.atLeastLength(1)) {
-      let next = new$11.head;
-      let new$1 = new$11.tail;
-      let added$1 = prepend(next, added);
-      loop$controlled = controlled;
-      loop$path = path;
-      loop$mapper = mapper;
-      loop$events = events;
-      loop$old = old;
-      loop$new = new$1;
-      loop$added = added$1;
-      loop$removed = removed;
-    } else {
-      let prev = old.head;
-      let remaining_old = old.tail;
-      let next = new$11.head;
-      let remaining_new = new$11.tail;
-      let $ = compare3(prev, next);
-      if (prev instanceof Attribute && $ instanceof Eq && next instanceof Attribute) {
-        let _block;
-        let $1 = next.name;
-        if ($1 === "value") {
-          _block = controlled || prev.value !== next.value;
-        } else if ($1 === "checked") {
-          _block = controlled || prev.value !== next.value;
-        } else if ($1 === "selected") {
-          _block = controlled || prev.value !== next.value;
-        } else {
-          _block = prev.value !== next.value;
-        }
-        let has_changes = _block;
-        let _block$1;
-        if (has_changes) {
-          _block$1 = prepend(next, added);
-        } else {
-          _block$1 = added;
-        }
-        let added$1 = _block$1;
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events;
-        loop$old = remaining_old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed;
-      } else if (prev instanceof Property && $ instanceof Eq && next instanceof Property) {
-        let _block;
-        let $1 = next.name;
-        if ($1 === "scrollLeft") {
-          _block = true;
-        } else if ($1 === "scrollRight") {
-          _block = true;
-        } else if ($1 === "value") {
-          _block = controlled || !isEqual(prev.value, next.value);
-        } else if ($1 === "checked") {
-          _block = controlled || !isEqual(prev.value, next.value);
-        } else if ($1 === "selected") {
-          _block = controlled || !isEqual(prev.value, next.value);
-        } else {
-          _block = !isEqual(prev.value, next.value);
-        }
-        let has_changes = _block;
-        let _block$1;
-        if (has_changes) {
-          _block$1 = prepend(next, added);
-        } else {
-          _block$1 = added;
-        }
-        let added$1 = _block$1;
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events;
-        loop$old = remaining_old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed;
-      } else if (prev instanceof Event2 && $ instanceof Eq && next instanceof Event2) {
-        let name = next.name;
-        let handler = next.handler;
-        let has_changes = prev.prevent_default !== next.prevent_default || prev.stop_propagation !== next.stop_propagation || prev.immediate !== next.immediate || !limit_equals(
-          prev.limit,
-          next.limit
-        );
-        let _block;
-        if (has_changes) {
-          _block = prepend(next, added);
-        } else {
-          _block = added;
-        }
-        let added$1 = _block;
-        let events$1 = add_event(events, mapper, path, name, handler);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events$1;
-        loop$old = remaining_old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed;
-      } else if (prev instanceof Event2 && $ instanceof Eq) {
-        let name = prev.name;
-        let added$1 = prepend(next, added);
-        let removed$1 = prepend(prev, removed);
-        let events$1 = remove_event(events, path, name);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events$1;
-        loop$old = remaining_old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed$1;
-      } else if ($ instanceof Eq && next instanceof Event2) {
-        let name = next.name;
-        let handler = next.handler;
-        let added$1 = prepend(next, added);
-        let removed$1 = prepend(prev, removed);
-        let events$1 = add_event(events, mapper, path, name, handler);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events$1;
-        loop$old = remaining_old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed$1;
-      } else if ($ instanceof Eq) {
-        let added$1 = prepend(next, added);
-        let removed$1 = prepend(prev, removed);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events;
-        loop$old = remaining_old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed$1;
-      } else if ($ instanceof Gt && next instanceof Event2) {
-        let name = next.name;
-        let handler = next.handler;
-        let added$1 = prepend(next, added);
-        let events$1 = add_event(events, mapper, path, name, handler);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events$1;
-        loop$old = old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed;
-      } else if ($ instanceof Gt) {
-        let added$1 = prepend(next, added);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events;
-        loop$old = old;
-        loop$new = remaining_new;
-        loop$added = added$1;
-        loop$removed = removed;
-      } else if (prev instanceof Event2 && $ instanceof Lt) {
-        let name = prev.name;
-        let removed$1 = prepend(prev, removed);
-        let events$1 = remove_event(events, path, name);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events$1;
-        loop$old = remaining_old;
-        loop$new = new$11;
-        loop$added = added;
-        loop$removed = removed$1;
+    if (new$11 instanceof Empty) {
+      if (old instanceof Empty) {
+        return new AttributeChange(added, removed, events);
       } else {
-        let removed$1 = prepend(prev, removed);
-        loop$controlled = controlled;
-        loop$path = path;
-        loop$mapper = mapper;
-        loop$events = events;
-        loop$old = remaining_old;
-        loop$new = new$11;
-        loop$added = added;
-        loop$removed = removed$1;
+        let $ = old.head;
+        if ($ instanceof Event2) {
+          let prev = $;
+          let old$1 = old.tail;
+          let name = $.name;
+          let removed$1 = prepend(prev, removed);
+          let events$1 = remove_event(events, path, name);
+          loop$controlled = controlled;
+          loop$path = path;
+          loop$mapper = mapper;
+          loop$events = events$1;
+          loop$old = old$1;
+          loop$new = new$11;
+          loop$added = added;
+          loop$removed = removed$1;
+        } else {
+          let prev = $;
+          let old$1 = old.tail;
+          let removed$1 = prepend(prev, removed);
+          loop$controlled = controlled;
+          loop$path = path;
+          loop$mapper = mapper;
+          loop$events = events;
+          loop$old = old$1;
+          loop$new = new$11;
+          loop$added = added;
+          loop$removed = removed$1;
+        }
+      }
+    } else {
+      if (old instanceof Empty) {
+        let $ = new$11.head;
+        if ($ instanceof Event2) {
+          let next = $;
+          let new$1 = new$11.tail;
+          let name = $.name;
+          let handler = $.handler;
+          let added$1 = prepend(next, added);
+          let events$1 = add_event(events, mapper, path, name, handler);
+          loop$controlled = controlled;
+          loop$path = path;
+          loop$mapper = mapper;
+          loop$events = events$1;
+          loop$old = old;
+          loop$new = new$1;
+          loop$added = added$1;
+          loop$removed = removed;
+        } else {
+          let next = $;
+          let new$1 = new$11.tail;
+          let added$1 = prepend(next, added);
+          loop$controlled = controlled;
+          loop$path = path;
+          loop$mapper = mapper;
+          loop$events = events;
+          loop$old = old;
+          loop$new = new$1;
+          loop$added = added$1;
+          loop$removed = removed;
+        }
+      } else {
+        let next = new$11.head;
+        let remaining_new = new$11.tail;
+        let prev = old.head;
+        let remaining_old = old.tail;
+        let $ = compare3(prev, next);
+        if ($ instanceof Lt) {
+          if (prev instanceof Event2) {
+            let name = prev.name;
+            let removed$1 = prepend(prev, removed);
+            let events$1 = remove_event(events, path, name);
+            loop$controlled = controlled;
+            loop$path = path;
+            loop$mapper = mapper;
+            loop$events = events$1;
+            loop$old = remaining_old;
+            loop$new = new$11;
+            loop$added = added;
+            loop$removed = removed$1;
+          } else {
+            let removed$1 = prepend(prev, removed);
+            loop$controlled = controlled;
+            loop$path = path;
+            loop$mapper = mapper;
+            loop$events = events;
+            loop$old = remaining_old;
+            loop$new = new$11;
+            loop$added = added;
+            loop$removed = removed$1;
+          }
+        } else if ($ instanceof Eq) {
+          if (next instanceof Attribute) {
+            if (prev instanceof Attribute) {
+              let _block;
+              let $1 = next.name;
+              if ($1 === "value") {
+                _block = controlled || prev.value !== next.value;
+              } else if ($1 === "checked") {
+                _block = controlled || prev.value !== next.value;
+              } else if ($1 === "selected") {
+                _block = controlled || prev.value !== next.value;
+              } else {
+                _block = prev.value !== next.value;
+              }
+              let has_changes = _block;
+              let _block$1;
+              if (has_changes) {
+                _block$1 = prepend(next, added);
+              } else {
+                _block$1 = added;
+              }
+              let added$1 = _block$1;
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed;
+            } else if (prev instanceof Event2) {
+              let name = prev.name;
+              let added$1 = prepend(next, added);
+              let removed$1 = prepend(prev, removed);
+              let events$1 = remove_event(events, path, name);
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events$1;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed$1;
+            } else {
+              let added$1 = prepend(next, added);
+              let removed$1 = prepend(prev, removed);
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed$1;
+            }
+          } else if (next instanceof Property) {
+            if (prev instanceof Property) {
+              let _block;
+              let $1 = next.name;
+              if ($1 === "scrollLeft") {
+                _block = true;
+              } else if ($1 === "scrollRight") {
+                _block = true;
+              } else if ($1 === "value") {
+                _block = controlled || !isEqual(prev.value, next.value);
+              } else if ($1 === "checked") {
+                _block = controlled || !isEqual(prev.value, next.value);
+              } else if ($1 === "selected") {
+                _block = controlled || !isEqual(prev.value, next.value);
+              } else {
+                _block = !isEqual(prev.value, next.value);
+              }
+              let has_changes = _block;
+              let _block$1;
+              if (has_changes) {
+                _block$1 = prepend(next, added);
+              } else {
+                _block$1 = added;
+              }
+              let added$1 = _block$1;
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed;
+            } else if (prev instanceof Event2) {
+              let name = prev.name;
+              let added$1 = prepend(next, added);
+              let removed$1 = prepend(prev, removed);
+              let events$1 = remove_event(events, path, name);
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events$1;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed$1;
+            } else {
+              let added$1 = prepend(next, added);
+              let removed$1 = prepend(prev, removed);
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed$1;
+            }
+          } else {
+            if (prev instanceof Event2) {
+              let name = next.name;
+              let handler = next.handler;
+              let has_changes = prev.prevent_default !== next.prevent_default || prev.stop_propagation !== next.stop_propagation || prev.immediate !== next.immediate || !limit_equals(
+                prev.limit,
+                next.limit
+              );
+              let _block;
+              if (has_changes) {
+                _block = prepend(next, added);
+              } else {
+                _block = added;
+              }
+              let added$1 = _block;
+              let events$1 = add_event(
+                events,
+                mapper,
+                path,
+                name,
+                handler
+              );
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events$1;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed;
+            } else {
+              let name = next.name;
+              let handler = next.handler;
+              let added$1 = prepend(next, added);
+              let removed$1 = prepend(prev, removed);
+              let events$1 = add_event(
+                events,
+                mapper,
+                path,
+                name,
+                handler
+              );
+              loop$controlled = controlled;
+              loop$path = path;
+              loop$mapper = mapper;
+              loop$events = events$1;
+              loop$old = remaining_old;
+              loop$new = remaining_new;
+              loop$added = added$1;
+              loop$removed = removed$1;
+            }
+          }
+        } else {
+          if (next instanceof Event2) {
+            let name = next.name;
+            let handler = next.handler;
+            let added$1 = prepend(next, added);
+            let events$1 = add_event(
+              events,
+              mapper,
+              path,
+              name,
+              handler
+            );
+            loop$controlled = controlled;
+            loop$path = path;
+            loop$mapper = mapper;
+            loop$events = events$1;
+            loop$old = old;
+            loop$new = remaining_new;
+            loop$added = added$1;
+            loop$removed = removed;
+          } else {
+            let added$1 = prepend(next, added);
+            loop$controlled = controlled;
+            loop$path = path;
+            loop$mapper = mapper;
+            loop$events = events;
+            loop$old = old;
+            loop$new = remaining_new;
+            loop$added = added$1;
+            loop$removed = removed;
+          }
+        }
       }
     }
   }
@@ -3542,412 +3845,678 @@ function do_diff(loop$old, loop$old_keyed, loop$new, loop$new_keyed, loop$moved,
     let children = loop$children;
     let mapper = loop$mapper;
     let events = loop$events;
-    if (old.hasLength(0) && new$11.hasLength(0)) {
-      return new Diff(
-        new Patch(patch_index, removed, changes, children),
-        events
-      );
-    } else if (old.atLeastLength(1) && new$11.hasLength(0)) {
-      let prev = old.head;
-      let old$1 = old.tail;
-      let _block;
-      let $ = prev.key === "" || !contains(moved, prev.key);
-      if ($) {
-        _block = removed + advance(prev);
+    if (new$11 instanceof Empty) {
+      if (old instanceof Empty) {
+        return new Diff(
+          new Patch(patch_index, removed, changes, children),
+          events
+        );
       } else {
-        _block = removed;
-      }
-      let removed$1 = _block;
-      let events$1 = remove_child(events, path, node_index, prev);
-      loop$old = old$1;
-      loop$old_keyed = old_keyed;
-      loop$new = new$11;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset;
-      loop$removed = removed$1;
-      loop$node_index = node_index;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = changes;
-      loop$children = children;
-      loop$mapper = mapper;
-      loop$events = events$1;
-    } else if (old.hasLength(0) && new$11.atLeastLength(1)) {
-      let events$1 = add_children(
-        events,
-        mapper,
-        path,
-        node_index,
-        new$11
-      );
-      let insert5 = insert4(new$11, node_index - moved_offset);
-      let changes$1 = prepend(insert5, changes);
-      return new Diff(
-        new Patch(patch_index, removed, changes$1, children),
-        events$1
-      );
-    } else if (old.atLeastLength(1) && new$11.atLeastLength(1) && old.head.key !== new$11.head.key) {
-      let prev = old.head;
-      let old_remaining = old.tail;
-      let next = new$11.head;
-      let new_remaining = new$11.tail;
-      let next_did_exist = get3(old_keyed, next.key);
-      let prev_does_exist = get3(new_keyed, prev.key);
-      let prev_has_moved = contains(moved, prev.key);
-      if (prev_does_exist.isOk() && next_did_exist.isOk() && prev_has_moved) {
-        loop$old = old_remaining;
+        let prev = old.head;
+        let old$1 = old.tail;
+        let _block;
+        let $ = prev.key === "" || !contains(moved, prev.key);
+        if ($) {
+          _block = removed + advance(prev);
+        } else {
+          _block = removed;
+        }
+        let removed$1 = _block;
+        let events$1 = remove_child(events, path, node_index, prev);
+        loop$old = old$1;
         loop$old_keyed = old_keyed;
         loop$new = new$11;
         loop$new_keyed = new_keyed;
         loop$moved = moved;
-        loop$moved_offset = moved_offset - advance(prev);
-        loop$removed = removed;
+        loop$moved_offset = moved_offset;
+        loop$removed = removed$1;
         loop$node_index = node_index;
         loop$patch_index = patch_index;
         loop$path = path;
         loop$changes = changes;
         loop$children = children;
         loop$mapper = mapper;
-        loop$events = events;
-      } else if (prev_does_exist.isOk() && next_did_exist.isOk()) {
-        let match = next_did_exist[0];
-        let count = advance(next);
-        let before = node_index - moved_offset;
-        let move2 = move(next.key, before, count);
-        let changes$1 = prepend(move2, changes);
-        let moved$1 = insert2(moved, next.key);
-        let moved_offset$1 = moved_offset + count;
-        loop$old = prepend(match, old);
-        loop$old_keyed = old_keyed;
-        loop$new = new$11;
-        loop$new_keyed = new_keyed;
-        loop$moved = moved$1;
-        loop$moved_offset = moved_offset$1;
-        loop$removed = removed;
-        loop$node_index = node_index;
-        loop$patch_index = patch_index;
-        loop$path = path;
-        loop$changes = changes$1;
-        loop$children = children;
-        loop$mapper = mapper;
-        loop$events = events;
-      } else if (!prev_does_exist.isOk() && next_did_exist.isOk()) {
-        let count = advance(prev);
-        let moved_offset$1 = moved_offset - count;
-        let events$1 = remove_child(events, path, node_index, prev);
-        let remove3 = remove_key(prev.key, count);
-        let changes$1 = prepend(remove3, changes);
-        loop$old = old_remaining;
-        loop$old_keyed = old_keyed;
-        loop$new = new$11;
-        loop$new_keyed = new_keyed;
-        loop$moved = moved;
-        loop$moved_offset = moved_offset$1;
-        loop$removed = removed;
-        loop$node_index = node_index;
-        loop$patch_index = patch_index;
-        loop$path = path;
-        loop$changes = changes$1;
-        loop$children = children;
-        loop$mapper = mapper;
-        loop$events = events$1;
-      } else if (prev_does_exist.isOk() && !next_did_exist.isOk()) {
-        let before = node_index - moved_offset;
-        let count = advance(next);
-        let events$1 = add_child(events, mapper, path, node_index, next);
-        let insert5 = insert4(toList([next]), before);
-        let changes$1 = prepend(insert5, changes);
-        loop$old = old;
-        loop$old_keyed = old_keyed;
-        loop$new = new_remaining;
-        loop$new_keyed = new_keyed;
-        loop$moved = moved;
-        loop$moved_offset = moved_offset + count;
-        loop$removed = removed;
-        loop$node_index = node_index + count;
-        loop$patch_index = patch_index;
-        loop$path = path;
-        loop$changes = changes$1;
-        loop$children = children;
-        loop$mapper = mapper;
-        loop$events = events$1;
-      } else {
-        let prev_count = advance(prev);
-        let next_count = advance(next);
-        let change = replace2(node_index - moved_offset, prev_count, next);
-        let _block;
-        let _pipe = events;
-        let _pipe$1 = remove_child(_pipe, path, node_index, prev);
-        _block = add_child(_pipe$1, mapper, path, node_index, next);
-        let events$1 = _block;
-        loop$old = old_remaining;
-        loop$old_keyed = old_keyed;
-        loop$new = new_remaining;
-        loop$new_keyed = new_keyed;
-        loop$moved = moved;
-        loop$moved_offset = moved_offset - prev_count + next_count;
-        loop$removed = removed;
-        loop$node_index = node_index + next_count;
-        loop$patch_index = patch_index;
-        loop$path = path;
-        loop$changes = prepend(change, changes);
-        loop$children = children;
-        loop$mapper = mapper;
         loop$events = events$1;
       }
-    } else if (old.atLeastLength(1) && old.head instanceof Fragment && new$11.atLeastLength(1) && new$11.head instanceof Fragment) {
-      let prev = old.head;
-      let old$1 = old.tail;
-      let next = new$11.head;
-      let new$1 = new$11.tail;
-      let node_index$1 = node_index + 1;
-      let prev_count = prev.children_count;
-      let next_count = next.children_count;
-      let composed_mapper = compose_mapper(mapper, next.mapper);
-      let child = do_diff(
-        prev.children,
-        prev.keyed_children,
-        next.children,
-        next.keyed_children,
-        empty_set(),
-        moved_offset,
-        0,
-        node_index$1,
-        -1,
-        path,
-        empty_list,
-        children,
-        composed_mapper,
-        events
-      );
-      let _block;
-      let $ = child.patch.removed > 0;
-      if ($) {
-        let remove_from = node_index$1 + next_count - moved_offset;
-        let patch = remove2(remove_from, child.patch.removed);
-        _block = append(child.patch.changes, prepend(patch, changes));
-      } else {
-        _block = append(child.patch.changes, changes);
-      }
-      let changes$1 = _block;
-      loop$old = old$1;
-      loop$old_keyed = old_keyed;
-      loop$new = new$1;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset + next_count - prev_count;
-      loop$removed = removed;
-      loop$node_index = node_index$1 + next_count;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = changes$1;
-      loop$children = child.patch.children;
-      loop$mapper = mapper;
-      loop$events = child.events;
-    } else if (old.atLeastLength(1) && old.head instanceof Element && new$11.atLeastLength(1) && new$11.head instanceof Element && (old.head.namespace === new$11.head.namespace && old.head.tag === new$11.head.tag)) {
-      let prev = old.head;
-      let old$1 = old.tail;
-      let next = new$11.head;
-      let new$1 = new$11.tail;
-      let composed_mapper = compose_mapper(mapper, next.mapper);
-      let child_path = add2(path, node_index, next.key);
-      let controlled = is_controlled(
-        events,
-        next.namespace,
-        next.tag,
-        child_path
-      );
-      let $ = diff_attributes(
-        controlled,
-        child_path,
-        composed_mapper,
-        events,
-        prev.attributes,
-        next.attributes,
-        empty_list,
-        empty_list
-      );
-      let added_attrs = $.added;
-      let removed_attrs = $.removed;
-      let events$1 = $.events;
-      let _block;
-      if (added_attrs.hasLength(0) && removed_attrs.hasLength(0)) {
-        _block = empty_list;
-      } else {
-        _block = toList([update2(added_attrs, removed_attrs)]);
-      }
-      let initial_child_changes = _block;
-      let child = do_diff(
-        prev.children,
-        prev.keyed_children,
-        next.children,
-        next.keyed_children,
-        empty_set(),
-        0,
-        0,
-        0,
-        node_index,
-        child_path,
-        initial_child_changes,
-        empty_list,
-        composed_mapper,
-        events$1
-      );
-      let _block$1;
-      let $1 = child.patch;
-      if ($1 instanceof Patch && $1.removed === 0 && $1.changes.hasLength(0) && $1.children.hasLength(0)) {
-        _block$1 = children;
-      } else {
-        _block$1 = prepend(child.patch, children);
-      }
-      let children$1 = _block$1;
-      loop$old = old$1;
-      loop$old_keyed = old_keyed;
-      loop$new = new$1;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset;
-      loop$removed = removed;
-      loop$node_index = node_index + 1;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = changes;
-      loop$children = children$1;
-      loop$mapper = mapper;
-      loop$events = child.events;
-    } else if (old.atLeastLength(1) && old.head instanceof Text && new$11.atLeastLength(1) && new$11.head instanceof Text && old.head.content === new$11.head.content) {
-      let prev = old.head;
-      let old$1 = old.tail;
-      let next = new$11.head;
-      let new$1 = new$11.tail;
-      loop$old = old$1;
-      loop$old_keyed = old_keyed;
-      loop$new = new$1;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset;
-      loop$removed = removed;
-      loop$node_index = node_index + 1;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = changes;
-      loop$children = children;
-      loop$mapper = mapper;
-      loop$events = events;
-    } else if (old.atLeastLength(1) && old.head instanceof Text && new$11.atLeastLength(1) && new$11.head instanceof Text) {
-      let old$1 = old.tail;
-      let next = new$11.head;
-      let new$1 = new$11.tail;
-      let child = new$7(
-        node_index,
-        0,
-        toList([replace_text(next.content)]),
-        empty_list
-      );
-      loop$old = old$1;
-      loop$old_keyed = old_keyed;
-      loop$new = new$1;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset;
-      loop$removed = removed;
-      loop$node_index = node_index + 1;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = changes;
-      loop$children = prepend(child, children);
-      loop$mapper = mapper;
-      loop$events = events;
-    } else if (old.atLeastLength(1) && old.head instanceof UnsafeInnerHtml && new$11.atLeastLength(1) && new$11.head instanceof UnsafeInnerHtml) {
-      let prev = old.head;
-      let old$1 = old.tail;
-      let next = new$11.head;
-      let new$1 = new$11.tail;
-      let composed_mapper = compose_mapper(mapper, next.mapper);
-      let child_path = add2(path, node_index, next.key);
-      let $ = diff_attributes(
-        false,
-        child_path,
-        composed_mapper,
-        events,
-        prev.attributes,
-        next.attributes,
-        empty_list,
-        empty_list
-      );
-      let added_attrs = $.added;
-      let removed_attrs = $.removed;
-      let events$1 = $.events;
-      let _block;
-      if (added_attrs.hasLength(0) && removed_attrs.hasLength(0)) {
-        _block = empty_list;
-      } else {
-        _block = toList([update2(added_attrs, removed_attrs)]);
-      }
-      let child_changes = _block;
-      let _block$1;
-      let $1 = prev.inner_html === next.inner_html;
-      if ($1) {
-        _block$1 = child_changes;
-      } else {
-        _block$1 = prepend(
-          replace_inner_html(next.inner_html),
-          child_changes
-        );
-      }
-      let child_changes$1 = _block$1;
-      let _block$2;
-      if (child_changes$1.hasLength(0)) {
-        _block$2 = children;
-      } else {
-        _block$2 = prepend(
-          new$7(node_index, 0, child_changes$1, toList([])),
-          children
-        );
-      }
-      let children$1 = _block$2;
-      loop$old = old$1;
-      loop$old_keyed = old_keyed;
-      loop$new = new$1;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset;
-      loop$removed = removed;
-      loop$node_index = node_index + 1;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = changes;
-      loop$children = children$1;
-      loop$mapper = mapper;
-      loop$events = events$1;
     } else {
-      let prev = old.head;
-      let old_remaining = old.tail;
-      let next = new$11.head;
-      let new_remaining = new$11.tail;
-      let prev_count = advance(prev);
-      let next_count = advance(next);
-      let change = replace2(node_index - moved_offset, prev_count, next);
-      let _block;
-      let _pipe = events;
-      let _pipe$1 = remove_child(_pipe, path, node_index, prev);
-      _block = add_child(_pipe$1, mapper, path, node_index, next);
-      let events$1 = _block;
-      loop$old = old_remaining;
-      loop$old_keyed = old_keyed;
-      loop$new = new_remaining;
-      loop$new_keyed = new_keyed;
-      loop$moved = moved;
-      loop$moved_offset = moved_offset - prev_count + next_count;
-      loop$removed = removed;
-      loop$node_index = node_index + next_count;
-      loop$patch_index = patch_index;
-      loop$path = path;
-      loop$changes = prepend(change, changes);
-      loop$children = children;
-      loop$mapper = mapper;
-      loop$events = events$1;
+      if (old instanceof Empty) {
+        let events$1 = add_children(
+          events,
+          mapper,
+          path,
+          node_index,
+          new$11
+        );
+        let insert5 = insert4(new$11, node_index - moved_offset);
+        let changes$1 = prepend(insert5, changes);
+        return new Diff(
+          new Patch(patch_index, removed, changes$1, children),
+          events$1
+        );
+      } else {
+        let next = new$11.head;
+        let prev = old.head;
+        if (prev.key !== next.key) {
+          let new_remaining = new$11.tail;
+          let old_remaining = old.tail;
+          let next_did_exist = get3(old_keyed, next.key);
+          let prev_does_exist = get3(new_keyed, prev.key);
+          let prev_has_moved = contains(moved, prev.key);
+          if (next_did_exist instanceof Ok) {
+            if (prev_does_exist instanceof Ok) {
+              if (prev_has_moved) {
+                loop$old = old_remaining;
+                loop$old_keyed = old_keyed;
+                loop$new = new$11;
+                loop$new_keyed = new_keyed;
+                loop$moved = moved;
+                loop$moved_offset = moved_offset - advance(prev);
+                loop$removed = removed;
+                loop$node_index = node_index;
+                loop$patch_index = patch_index;
+                loop$path = path;
+                loop$changes = changes;
+                loop$children = children;
+                loop$mapper = mapper;
+                loop$events = events;
+              } else {
+                let match = next_did_exist[0];
+                let count = advance(next);
+                let before = node_index - moved_offset;
+                let move2 = move(next.key, before, count);
+                let changes$1 = prepend(move2, changes);
+                let moved$1 = insert2(moved, next.key);
+                let moved_offset$1 = moved_offset + count;
+                loop$old = prepend(match, old);
+                loop$old_keyed = old_keyed;
+                loop$new = new$11;
+                loop$new_keyed = new_keyed;
+                loop$moved = moved$1;
+                loop$moved_offset = moved_offset$1;
+                loop$removed = removed;
+                loop$node_index = node_index;
+                loop$patch_index = patch_index;
+                loop$path = path;
+                loop$changes = changes$1;
+                loop$children = children;
+                loop$mapper = mapper;
+                loop$events = events;
+              }
+            } else {
+              let count = advance(prev);
+              let moved_offset$1 = moved_offset - count;
+              let events$1 = remove_child(
+                events,
+                path,
+                node_index,
+                prev
+              );
+              let remove3 = remove_key(prev.key, count);
+              let changes$1 = prepend(remove3, changes);
+              loop$old = old_remaining;
+              loop$old_keyed = old_keyed;
+              loop$new = new$11;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset$1;
+              loop$removed = removed;
+              loop$node_index = node_index;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = changes$1;
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            }
+          } else {
+            if (prev_does_exist instanceof Ok) {
+              let before = node_index - moved_offset;
+              let count = advance(next);
+              let events$1 = add_child(
+                events,
+                mapper,
+                path,
+                node_index,
+                next
+              );
+              let insert5 = insert4(toList([next]), before);
+              let changes$1 = prepend(insert5, changes);
+              loop$old = old;
+              loop$old_keyed = old_keyed;
+              loop$new = new_remaining;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset + count;
+              loop$removed = removed;
+              loop$node_index = node_index + count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = changes$1;
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            } else {
+              let prev_count = advance(prev);
+              let next_count = advance(next);
+              let change = replace2(
+                node_index - moved_offset,
+                prev_count,
+                next
+              );
+              let _block;
+              let _pipe = events;
+              let _pipe$1 = remove_child(_pipe, path, node_index, prev);
+              _block = add_child(
+                _pipe$1,
+                mapper,
+                path,
+                node_index,
+                next
+              );
+              let events$1 = _block;
+              loop$old = old_remaining;
+              loop$old_keyed = old_keyed;
+              loop$new = new_remaining;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset - prev_count + next_count;
+              loop$removed = removed;
+              loop$node_index = node_index + next_count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = prepend(change, changes);
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            }
+          }
+        } else {
+          let $ = old.head;
+          if ($ instanceof Fragment) {
+            let $1 = new$11.head;
+            if ($1 instanceof Fragment) {
+              let next$1 = $1;
+              let new$1 = new$11.tail;
+              let prev$1 = $;
+              let old$1 = old.tail;
+              let node_index$1 = node_index + 1;
+              let prev_count = prev$1.children_count;
+              let next_count = next$1.children_count;
+              let composed_mapper = compose_mapper(
+                mapper,
+                next$1.mapper
+              );
+              let child = do_diff(
+                prev$1.children,
+                prev$1.keyed_children,
+                next$1.children,
+                next$1.keyed_children,
+                empty_set(),
+                moved_offset,
+                0,
+                node_index$1,
+                -1,
+                path,
+                empty_list,
+                children,
+                composed_mapper,
+                events
+              );
+              let _block;
+              let $2 = child.patch.removed > 0;
+              if ($2) {
+                let remove_from = node_index$1 + next_count - moved_offset;
+                let patch = remove2(remove_from, child.patch.removed);
+                _block = append(
+                  child.patch.changes,
+                  prepend(patch, changes)
+                );
+              } else {
+                _block = append(child.patch.changes, changes);
+              }
+              let changes$1 = _block;
+              loop$old = old$1;
+              loop$old_keyed = old_keyed;
+              loop$new = new$1;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset + next_count - prev_count;
+              loop$removed = removed;
+              loop$node_index = node_index$1 + next_count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = changes$1;
+              loop$children = child.patch.children;
+              loop$mapper = mapper;
+              loop$events = child.events;
+            } else {
+              let next$1 = $1;
+              let new_remaining = new$11.tail;
+              let prev$1 = $;
+              let old_remaining = old.tail;
+              let prev_count = advance(prev$1);
+              let next_count = advance(next$1);
+              let change = replace2(
+                node_index - moved_offset,
+                prev_count,
+                next$1
+              );
+              let _block;
+              let _pipe = events;
+              let _pipe$1 = remove_child(
+                _pipe,
+                path,
+                node_index,
+                prev$1
+              );
+              _block = add_child(
+                _pipe$1,
+                mapper,
+                path,
+                node_index,
+                next$1
+              );
+              let events$1 = _block;
+              loop$old = old_remaining;
+              loop$old_keyed = old_keyed;
+              loop$new = new_remaining;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset - prev_count + next_count;
+              loop$removed = removed;
+              loop$node_index = node_index + next_count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = prepend(change, changes);
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            }
+          } else if ($ instanceof Element) {
+            let $1 = new$11.head;
+            if ($1 instanceof Element) {
+              let next$1 = $1;
+              let prev$1 = $;
+              if (prev$1.namespace === next$1.namespace && prev$1.tag === next$1.tag) {
+                let new$1 = new$11.tail;
+                let old$1 = old.tail;
+                let composed_mapper = compose_mapper(
+                  mapper,
+                  next$1.mapper
+                );
+                let child_path = add2(path, node_index, next$1.key);
+                let controlled = is_controlled(
+                  events,
+                  next$1.namespace,
+                  next$1.tag,
+                  child_path
+                );
+                let $2 = diff_attributes(
+                  controlled,
+                  child_path,
+                  composed_mapper,
+                  events,
+                  prev$1.attributes,
+                  next$1.attributes,
+                  empty_list,
+                  empty_list
+                );
+                let added_attrs = $2.added;
+                let removed_attrs = $2.removed;
+                let events$1 = $2.events;
+                let _block;
+                if (removed_attrs instanceof Empty) {
+                  if (added_attrs instanceof Empty) {
+                    _block = empty_list;
+                  } else {
+                    _block = toList([update2(added_attrs, removed_attrs)]);
+                  }
+                } else {
+                  _block = toList([update2(added_attrs, removed_attrs)]);
+                }
+                let initial_child_changes = _block;
+                let child = do_diff(
+                  prev$1.children,
+                  prev$1.keyed_children,
+                  next$1.children,
+                  next$1.keyed_children,
+                  empty_set(),
+                  0,
+                  0,
+                  0,
+                  node_index,
+                  child_path,
+                  initial_child_changes,
+                  empty_list,
+                  composed_mapper,
+                  events$1
+                );
+                let _block$1;
+                let $3 = child.patch;
+                let $4 = $3.children;
+                if ($4 instanceof Empty) {
+                  let $5 = $3.changes;
+                  if ($5 instanceof Empty) {
+                    let $6 = $3.removed;
+                    if ($6 === 0) {
+                      _block$1 = children;
+                    } else {
+                      _block$1 = prepend(child.patch, children);
+                    }
+                  } else {
+                    _block$1 = prepend(child.patch, children);
+                  }
+                } else {
+                  _block$1 = prepend(child.patch, children);
+                }
+                let children$1 = _block$1;
+                loop$old = old$1;
+                loop$old_keyed = old_keyed;
+                loop$new = new$1;
+                loop$new_keyed = new_keyed;
+                loop$moved = moved;
+                loop$moved_offset = moved_offset;
+                loop$removed = removed;
+                loop$node_index = node_index + 1;
+                loop$patch_index = patch_index;
+                loop$path = path;
+                loop$changes = changes;
+                loop$children = children$1;
+                loop$mapper = mapper;
+                loop$events = child.events;
+              } else {
+                let next$2 = $1;
+                let new_remaining = new$11.tail;
+                let prev$2 = $;
+                let old_remaining = old.tail;
+                let prev_count = advance(prev$2);
+                let next_count = advance(next$2);
+                let change = replace2(
+                  node_index - moved_offset,
+                  prev_count,
+                  next$2
+                );
+                let _block;
+                let _pipe = events;
+                let _pipe$1 = remove_child(
+                  _pipe,
+                  path,
+                  node_index,
+                  prev$2
+                );
+                _block = add_child(
+                  _pipe$1,
+                  mapper,
+                  path,
+                  node_index,
+                  next$2
+                );
+                let events$1 = _block;
+                loop$old = old_remaining;
+                loop$old_keyed = old_keyed;
+                loop$new = new_remaining;
+                loop$new_keyed = new_keyed;
+                loop$moved = moved;
+                loop$moved_offset = moved_offset - prev_count + next_count;
+                loop$removed = removed;
+                loop$node_index = node_index + next_count;
+                loop$patch_index = patch_index;
+                loop$path = path;
+                loop$changes = prepend(change, changes);
+                loop$children = children;
+                loop$mapper = mapper;
+                loop$events = events$1;
+              }
+            } else {
+              let next$1 = $1;
+              let new_remaining = new$11.tail;
+              let prev$1 = $;
+              let old_remaining = old.tail;
+              let prev_count = advance(prev$1);
+              let next_count = advance(next$1);
+              let change = replace2(
+                node_index - moved_offset,
+                prev_count,
+                next$1
+              );
+              let _block;
+              let _pipe = events;
+              let _pipe$1 = remove_child(
+                _pipe,
+                path,
+                node_index,
+                prev$1
+              );
+              _block = add_child(
+                _pipe$1,
+                mapper,
+                path,
+                node_index,
+                next$1
+              );
+              let events$1 = _block;
+              loop$old = old_remaining;
+              loop$old_keyed = old_keyed;
+              loop$new = new_remaining;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset - prev_count + next_count;
+              loop$removed = removed;
+              loop$node_index = node_index + next_count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = prepend(change, changes);
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            }
+          } else if ($ instanceof Text) {
+            let $1 = new$11.head;
+            if ($1 instanceof Text) {
+              let next$1 = $1;
+              let prev$1 = $;
+              if (prev$1.content === next$1.content) {
+                let new$1 = new$11.tail;
+                let old$1 = old.tail;
+                loop$old = old$1;
+                loop$old_keyed = old_keyed;
+                loop$new = new$1;
+                loop$new_keyed = new_keyed;
+                loop$moved = moved;
+                loop$moved_offset = moved_offset;
+                loop$removed = removed;
+                loop$node_index = node_index + 1;
+                loop$patch_index = patch_index;
+                loop$path = path;
+                loop$changes = changes;
+                loop$children = children;
+                loop$mapper = mapper;
+                loop$events = events;
+              } else {
+                let next$2 = $1;
+                let new$1 = new$11.tail;
+                let old$1 = old.tail;
+                let child = new$7(
+                  node_index,
+                  0,
+                  toList([replace_text(next$2.content)]),
+                  empty_list
+                );
+                loop$old = old$1;
+                loop$old_keyed = old_keyed;
+                loop$new = new$1;
+                loop$new_keyed = new_keyed;
+                loop$moved = moved;
+                loop$moved_offset = moved_offset;
+                loop$removed = removed;
+                loop$node_index = node_index + 1;
+                loop$patch_index = patch_index;
+                loop$path = path;
+                loop$changes = changes;
+                loop$children = prepend(child, children);
+                loop$mapper = mapper;
+                loop$events = events;
+              }
+            } else {
+              let next$1 = $1;
+              let new_remaining = new$11.tail;
+              let prev$1 = $;
+              let old_remaining = old.tail;
+              let prev_count = advance(prev$1);
+              let next_count = advance(next$1);
+              let change = replace2(
+                node_index - moved_offset,
+                prev_count,
+                next$1
+              );
+              let _block;
+              let _pipe = events;
+              let _pipe$1 = remove_child(
+                _pipe,
+                path,
+                node_index,
+                prev$1
+              );
+              _block = add_child(
+                _pipe$1,
+                mapper,
+                path,
+                node_index,
+                next$1
+              );
+              let events$1 = _block;
+              loop$old = old_remaining;
+              loop$old_keyed = old_keyed;
+              loop$new = new_remaining;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset - prev_count + next_count;
+              loop$removed = removed;
+              loop$node_index = node_index + next_count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = prepend(change, changes);
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            }
+          } else {
+            let $1 = new$11.head;
+            if ($1 instanceof UnsafeInnerHtml) {
+              let next$1 = $1;
+              let new$1 = new$11.tail;
+              let prev$1 = $;
+              let old$1 = old.tail;
+              let composed_mapper = compose_mapper(
+                mapper,
+                next$1.mapper
+              );
+              let child_path = add2(path, node_index, next$1.key);
+              let $2 = diff_attributes(
+                false,
+                child_path,
+                composed_mapper,
+                events,
+                prev$1.attributes,
+                next$1.attributes,
+                empty_list,
+                empty_list
+              );
+              let added_attrs = $2.added;
+              let removed_attrs = $2.removed;
+              let events$1 = $2.events;
+              let _block;
+              if (removed_attrs instanceof Empty) {
+                if (added_attrs instanceof Empty) {
+                  _block = empty_list;
+                } else {
+                  _block = toList([update2(added_attrs, removed_attrs)]);
+                }
+              } else {
+                _block = toList([update2(added_attrs, removed_attrs)]);
+              }
+              let child_changes = _block;
+              let _block$1;
+              let $3 = prev$1.inner_html === next$1.inner_html;
+              if ($3) {
+                _block$1 = child_changes;
+              } else {
+                _block$1 = prepend(
+                  replace_inner_html(next$1.inner_html),
+                  child_changes
+                );
+              }
+              let child_changes$1 = _block$1;
+              let _block$2;
+              if (child_changes$1 instanceof Empty) {
+                _block$2 = children;
+              } else {
+                _block$2 = prepend(
+                  new$7(node_index, 0, child_changes$1, toList([])),
+                  children
+                );
+              }
+              let children$1 = _block$2;
+              loop$old = old$1;
+              loop$old_keyed = old_keyed;
+              loop$new = new$1;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset;
+              loop$removed = removed;
+              loop$node_index = node_index + 1;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = changes;
+              loop$children = children$1;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            } else {
+              let next$1 = $1;
+              let new_remaining = new$11.tail;
+              let prev$1 = $;
+              let old_remaining = old.tail;
+              let prev_count = advance(prev$1);
+              let next_count = advance(next$1);
+              let change = replace2(
+                node_index - moved_offset,
+                prev_count,
+                next$1
+              );
+              let _block;
+              let _pipe = events;
+              let _pipe$1 = remove_child(
+                _pipe,
+                path,
+                node_index,
+                prev$1
+              );
+              _block = add_child(
+                _pipe$1,
+                mapper,
+                path,
+                node_index,
+                next$1
+              );
+              let events$1 = _block;
+              loop$old = old_remaining;
+              loop$old_keyed = old_keyed;
+              loop$new = new_remaining;
+              loop$new_keyed = new_keyed;
+              loop$moved = moved;
+              loop$moved_offset = moved_offset - prev_count + next_count;
+              loop$removed = removed;
+              loop$node_index = node_index + next_count;
+              loop$patch_index = patch_index;
+              loop$path = path;
+              loop$changes = prepend(change, changes);
+              loop$children = children;
+              loop$mapper = mapper;
+              loop$events = events$1;
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -4665,7 +5234,7 @@ function handle(events, path, name, event4) {
     events$1.handlers,
     path + separator_event + name
   );
-  if ($.isOk()) {
+  if ($ instanceof Ok) {
     let handler = $[0];
     return [events$1, run(event4, handler)];
   } else {
@@ -4711,12 +5280,14 @@ function compose_mapper(mapper, child_mapper) {
   let $1 = is_reference_equal(child_mapper, identity2);
   if ($1) {
     return mapper;
-  } else if ($ && !$1) {
-    return child_mapper;
   } else {
-    return (msg) => {
-      return mapper(child_mapper(msg));
-    };
+    if ($) {
+      return child_mapper;
+    } else {
+      return (msg) => {
+        return mapper(child_mapper(msg));
+      };
+    }
   }
 }
 function do_remove_children(loop$handlers, loop$path, loop$child_index, loop$children) {
@@ -4725,7 +5296,7 @@ function do_remove_children(loop$handlers, loop$path, loop$child_index, loop$chi
     let path = loop$path;
     let child_index = loop$child_index;
     let children = loop$children;
-    if (children.hasLength(0)) {
+    if (children instanceof Empty) {
       return handlers;
     } else {
       let child = children.head;
@@ -4740,22 +5311,22 @@ function do_remove_children(loop$handlers, loop$path, loop$child_index, loop$chi
   }
 }
 function do_remove_child(handlers, parent, child_index, child) {
-  if (child instanceof Element) {
+  if (child instanceof Fragment) {
+    let children = child.children;
+    return do_remove_children(handlers, parent, child_index + 1, children);
+  } else if (child instanceof Element) {
     let attributes = child.attributes;
     let children = child.children;
     let path = add2(parent, child_index, child.key);
     let _pipe = handlers;
     let _pipe$1 = remove_attributes(_pipe, path, attributes);
     return do_remove_children(_pipe$1, path, 0, children);
-  } else if (child instanceof Fragment) {
-    let children = child.children;
-    return do_remove_children(handlers, parent, child_index + 1, children);
-  } else if (child instanceof UnsafeInnerHtml) {
+  } else if (child instanceof Text) {
+    return handlers;
+  } else {
     let attributes = child.attributes;
     let path = add2(parent, child_index, child.key);
     return remove_attributes(handlers, path, attributes);
-  } else {
-    return handlers;
   }
 }
 function remove_child(events, parent, child_index, child) {
@@ -4774,7 +5345,7 @@ function do_add_children(loop$handlers, loop$mapper, loop$path, loop$child_index
     let path = loop$path;
     let child_index = loop$child_index;
     let children = loop$children;
-    if (children.hasLength(0)) {
+    if (children instanceof Empty) {
       return handlers;
     } else {
       let child = children.head;
@@ -4790,15 +5361,7 @@ function do_add_children(loop$handlers, loop$mapper, loop$path, loop$child_index
   }
 }
 function do_add_child(handlers, mapper, parent, child_index, child) {
-  if (child instanceof Element) {
-    let attributes = child.attributes;
-    let children = child.children;
-    let path = add2(parent, child_index, child.key);
-    let composed_mapper = compose_mapper(mapper, child.mapper);
-    let _pipe = handlers;
-    let _pipe$1 = add_attributes(_pipe, composed_mapper, path, attributes);
-    return do_add_children(_pipe$1, composed_mapper, path, 0, children);
-  } else if (child instanceof Fragment) {
+  if (child instanceof Fragment) {
     let children = child.children;
     let composed_mapper = compose_mapper(mapper, child.mapper);
     let child_index$1 = child_index + 1;
@@ -4809,13 +5372,21 @@ function do_add_child(handlers, mapper, parent, child_index, child) {
       child_index$1,
       children
     );
-  } else if (child instanceof UnsafeInnerHtml) {
+  } else if (child instanceof Element) {
+    let attributes = child.attributes;
+    let children = child.children;
+    let path = add2(parent, child_index, child.key);
+    let composed_mapper = compose_mapper(mapper, child.mapper);
+    let _pipe = handlers;
+    let _pipe$1 = add_attributes(_pipe, composed_mapper, path, attributes);
+    return do_add_children(_pipe$1, composed_mapper, path, 0, children);
+  } else if (child instanceof Text) {
+    return handlers;
+  } else {
     let attributes = child.attributes;
     let path = add2(parent, child_index, child.key);
     let composed_mapper = compose_mapper(mapper, child.mapper);
     return add_attributes(handlers, composed_mapper, path, attributes);
-  } else {
-    return handlers;
   }
 }
 function add_child(events, mapper, parent, index4, child) {
@@ -4880,17 +5451,20 @@ function count_fragment_children(loop$children, loop$count) {
   while (true) {
     let children = loop$children;
     let count = loop$count;
-    if (children.hasLength(0)) {
+    if (children instanceof Empty) {
       return count;
-    } else if (children.atLeastLength(1) && children.head instanceof Fragment) {
-      let children_count = children.head.children_count;
-      let rest = children.tail;
-      loop$children = rest;
-      loop$count = count + children_count;
     } else {
-      let rest = children.tail;
-      loop$children = rest;
-      loop$count = count + 1;
+      let $ = children.head;
+      if ($ instanceof Fragment) {
+        let rest = children.tail;
+        let children_count = $.children_count;
+        loop$children = rest;
+        loop$count = count + children_count;
+      } else {
+        let rest = children.tail;
+        loop$children = rest;
+        loop$count = count + 1;
+      }
     }
   }
 }
@@ -5402,7 +5976,24 @@ function view_entry(entry) {
     toList([
       (() => {
         let $ = entry.editing;
-        if (!$) {
+        if ($) {
+          return input(
+            toList([
+              class$("edit"),
+              value(description),
+              autofocus(true),
+              on_input(
+                (_capture) => {
+                  return new UserEditedDescription(id2, _capture);
+                }
+              ),
+              on_blur(new UserToggledEditing(id2, false)),
+              on_enter((_) => {
+                return new UserToggledEditing(id2, false);
+              })
+            ])
+          );
+        } else {
           return div(
             toList([class$("view")]),
             toList([
@@ -5429,23 +6020,6 @@ function view_entry(entry) {
                 ]),
                 toList([])
               )
-            ])
-          );
-        } else {
-          return input(
-            toList([
-              class$("edit"),
-              value(description),
-              autofocus(true),
-              on_input(
-                (_capture) => {
-                  return new UserEditedDescription(id2, _capture);
-                }
-              ),
-              on_blur(new UserToggledEditing(id2, false)),
-              on_enter((_) => {
-                return new UserToggledEditing(id2, false);
-              })
             ])
           );
         }
@@ -5483,10 +6057,10 @@ function view_entries(model) {
           (list4, entry) => {
             let _block;
             let $ = model.visibility;
-            if ($ instanceof Completed) {
-              _block = entry.completed && !entry.deleted;
-            } else if ($ instanceof Active) {
+            if ($ instanceof Active) {
               _block = !entry.completed && !entry.deleted;
+            } else if ($ instanceof Completed) {
+              _block = entry.completed && !entry.deleted;
             } else {
               _block = !entry.deleted;
             }
@@ -5554,17 +6128,34 @@ function update3(model, msg) {
         return [model$1, clear_input("new-todo")];
       }
     );
-  } else if (msg instanceof UserChangedVisibility) {
-    let visibility = msg.visibility;
+  } else if (msg instanceof UserClickedClearCompleted) {
+    let entries = map6(
+      model.entries,
+      (entry) => {
+        let $ = entry.completed;
+        if ($) {
+          let _record = entry;
+          return new Entry(
+            _record.description,
+            _record.completed,
+            _record.editing,
+            true,
+            _record.id
+          );
+        } else {
+          return entry;
+        }
+      }
+    );
     return [
       (() => {
         let _record = model;
         return new Model(
-          _record.entries,
+          entries,
           _record.active,
-          _record.completed,
+          0,
           _record.uid,
-          visibility
+          _record.visibility
         );
       })(),
       none2()
@@ -5595,33 +6186,17 @@ function update3(model, msg) {
     }
     let model$1 = _block;
     return [model$1, none2()];
-  } else if (msg instanceof UserClickedClearCompleted) {
-    let entries = map6(
-      model.entries,
-      (entry) => {
-        if (entry instanceof Entry && entry.completed) {
-          let _record = entry;
-          return new Entry(
-            _record.description,
-            _record.completed,
-            _record.editing,
-            true,
-            _record.id
-          );
-        } else {
-          return entry;
-        }
-      }
-    );
+  } else if (msg instanceof UserChangedVisibility) {
+    let visibility = msg.visibility;
     return [
       (() => {
         let _record = model;
         return new Model(
-          entries,
+          _record.entries,
           _record.active,
-          0,
+          _record.completed,
           _record.uid,
-          _record.visibility
+          visibility
         );
       })(),
       none2()
@@ -5629,45 +6204,49 @@ function update3(model, msg) {
   } else if (msg instanceof UserClickedDestroy) {
     let index4 = msg.index;
     let $ = get2(model.entries, index4);
-    if ($.isOk() && !$[0].deleted) {
+    if ($ instanceof Ok) {
       let entry = $[0];
-      let entries = try_set(
-        model.entries,
-        index4,
-        (() => {
-          let _record = entry;
-          return new Entry(
-            _record.description,
-            _record.completed,
-            _record.editing,
-            true,
-            _record.id
+      if (!entry.deleted) {
+        let entries = try_set(
+          model.entries,
+          index4,
+          (() => {
+            let _record = entry;
+            return new Entry(
+              _record.description,
+              _record.completed,
+              _record.editing,
+              true,
+              _record.id
+            );
+          })()
+        );
+        let _block;
+        let $1 = entry.completed;
+        if ($1) {
+          let _record = model;
+          _block = new Model(
+            entries,
+            _record.active,
+            model.completed - 1,
+            _record.uid,
+            _record.visibility
           );
-        })()
-      );
-      let _block;
-      let $1 = entry.completed;
-      if ($1) {
-        let _record = model;
-        _block = new Model(
-          entries,
-          _record.active,
-          model.completed - 1,
-          _record.uid,
-          _record.visibility
-        );
+        } else {
+          let _record = model;
+          _block = new Model(
+            entries,
+            model.active - 1,
+            _record.completed,
+            _record.uid,
+            _record.visibility
+          );
+        }
+        let model$1 = _block;
+        return [model$1, none2()];
       } else {
-        let _record = model;
-        _block = new Model(
-          entries,
-          model.active - 1,
-          _record.completed,
-          _record.uid,
-          _record.visibility
-        );
+        return [model, none2()];
       }
-      let model$1 = _block;
-      return [model$1, none2()];
     } else {
       return [model, none2()];
     }
@@ -5675,110 +6254,117 @@ function update3(model, msg) {
     let index4 = msg.index;
     let completed = msg.completed;
     let $ = get2(model.entries, index4);
-    if ($.isOk() && $[0].completed !== completed) {
+    if ($ instanceof Ok) {
       let entry = $[0];
-      let entries = try_set(
-        model.entries,
-        index4,
-        (() => {
-          let _record = entry;
-          return new Entry(
-            _record.description,
-            completed,
-            _record.editing,
-            _record.deleted,
-            _record.id
+      if (entry.completed !== completed) {
+        let entries = try_set(
+          model.entries,
+          index4,
+          (() => {
+            let _record = entry;
+            return new Entry(
+              _record.description,
+              completed,
+              _record.editing,
+              _record.deleted,
+              _record.id
+            );
+          })()
+        );
+        let _block;
+        if (completed) {
+          let active = model.active - 1;
+          let completed$1 = model.completed + 1;
+          let _record = model;
+          _block = new Model(
+            entries,
+            active,
+            completed$1,
+            _record.uid,
+            _record.visibility
           );
-        })()
-      );
-      let _block;
-      if (completed) {
-        let active = model.active - 1;
-        let completed$1 = model.completed + 1;
-        let _record = model;
-        _block = new Model(
-          entries,
-          active,
-          completed$1,
-          _record.uid,
-          _record.visibility
-        );
+        } else {
+          let active = model.active + 1;
+          let completed$1 = model.completed - 1;
+          let _record = model;
+          _block = new Model(
+            entries,
+            active,
+            completed$1,
+            _record.uid,
+            _record.visibility
+          );
+        }
+        let model$1 = _block;
+        return [model$1, none2()];
       } else {
-        let active = model.active + 1;
-        let completed$1 = model.completed - 1;
-        let _record = model;
-        _block = new Model(
-          entries,
-          active,
-          completed$1,
-          _record.uid,
-          _record.visibility
-        );
+        return [model, none2()];
       }
-      let model$1 = _block;
-      return [model$1, none2()];
     } else {
       return [model, none2()];
     }
-  } else if (msg instanceof UserToggledEditing && msg.editing) {
-    let index4 = msg.index;
-    let entries = try_update(
-      model.entries,
-      index4,
-      (entry) => {
-        let _record = entry;
-        return new Entry(
-          _record.description,
-          _record.completed,
-          true,
-          _record.deleted,
-          _record.id
-        );
-      }
-    );
-    return [
-      (() => {
-        let _record = model;
-        return new Model(
-          entries,
-          _record.active,
-          _record.completed,
-          _record.uid,
-          _record.visibility
-        );
-      })(),
-      none2()
-    ];
-  } else if (msg instanceof UserToggledEditing && !msg.editing) {
-    let index4 = msg.index;
-    let entries = try_update(
-      model.entries,
-      index4,
-      (entry) => {
-        let description = trim(entry.description);
-        let _record = entry;
-        return new Entry(
-          description,
-          _record.completed,
-          false,
-          _record.deleted,
-          _record.id
-        );
-      }
-    );
-    return [
-      (() => {
-        let _record = model;
-        return new Model(
-          entries,
-          _record.active,
-          _record.completed,
-          _record.uid,
-          _record.visibility
-        );
-      })(),
-      none2()
-    ];
+  } else if (msg instanceof UserToggledEditing) {
+    let $ = msg.editing;
+    if ($) {
+      let index4 = msg.index;
+      let entries = try_update(
+        model.entries,
+        index4,
+        (entry) => {
+          let _record = entry;
+          return new Entry(
+            _record.description,
+            _record.completed,
+            true,
+            _record.deleted,
+            _record.id
+          );
+        }
+      );
+      return [
+        (() => {
+          let _record = model;
+          return new Model(
+            entries,
+            _record.active,
+            _record.completed,
+            _record.uid,
+            _record.visibility
+          );
+        })(),
+        none2()
+      ];
+    } else {
+      let index4 = msg.index;
+      let entries = try_update(
+        model.entries,
+        index4,
+        (entry) => {
+          let description = trim(entry.description);
+          let _record = entry;
+          return new Entry(
+            description,
+            _record.completed,
+            false,
+            _record.deleted,
+            _record.id
+          );
+        }
+      );
+      return [
+        (() => {
+          let _record = model;
+          return new Model(
+            entries,
+            _record.active,
+            _record.completed,
+            _record.uid,
+            _record.visibility
+          );
+        })(),
+        none2()
+      ];
+    }
   } else {
     let index4 = msg.index;
     let description = msg.description;
@@ -5814,7 +6400,7 @@ function update3(model, msg) {
 function main() {
   let app = application(init, update3, view);
   let $ = start3(app, ".todoapp", void 0);
-  if (!$.isOk()) {
+  if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
       "todomvc",
