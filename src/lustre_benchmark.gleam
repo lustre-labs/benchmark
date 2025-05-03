@@ -1,3 +1,4 @@
+// IMPORTS ---------------------------------------------------------------------
 import gleam/dynamic/decode
 import gleam/int
 import gleam/list
@@ -13,26 +14,53 @@ import lustre/element/html
 import lustre/event
 import step.{type Step}
 
+// MAIN ------------------------------------------------------------------------
+
 pub fn main() {
   let assert Ok(implementations) =
     get_implementations() |> decode.run(decode.list(implementation.decoder()))
 
+  let cross_origin_isolated = is_cross_origin_isolated()
+
   let app = lustre.application(init, update, view)
 
-  let assert Ok(_) = lustre.start(app, "body", implementations)
+  let assert Ok(_) =
+    lustre.start(app, "body", #(cross_origin_isolated, implementations))
+
   Nil
 }
 
 @external(javascript, "./app.ffi.mjs", "get_implementations")
 fn get_implementations() -> decode.Dynamic
 
+@external(javascript, "./app.ffi.mjs", "is_cross_origin_isolated")
+fn is_cross_origin_isolated() -> Bool
+
+// MODEL -----------------------------------------------------------------------
+
 type Model {
   Model(
     implementations: List(Implementation),
+    cross_origin_isolated: Bool,
     selected: Set(Implementation),
     num_items: Int,
     runner: Runner,
   )
+}
+
+fn init(args) -> #(Model, Effect(Msg)) {
+  let #(cross_origin_isolated, implementations) = args
+
+  let model =
+    Model(
+      implementations:,
+      cross_origin_isolated:,
+      selected: set.new(),
+      num_items: 100,
+      runner: NotRunYet,
+    )
+
+  #(model, effect.none())
 }
 
 type Runner {
@@ -66,16 +94,7 @@ fn is_running(model: Model) -> Bool {
   }
 }
 
-fn init(implementations) -> #(Model, Effect(Msg)) {
-  let model =
-    Model(
-      implementations:,
-      selected: set.new(),
-      num_items: 100,
-      runner: NotRunYet,
-    )
-  #(model, effect.none())
-}
+// UPDATE ----------------------------------------------------------------------
 
 type Msg {
   UserToggledImplementation(Implementation, Bool)
@@ -233,8 +252,14 @@ fn wait_for_next_frame(msg) {
   dispatch(msg)
 }
 
+// VIEW ------------------------------------------------------------------------
+
 fn view(model: Model) -> Element(Msg) {
   element.fragment([
+    case model.cross_origin_isolated {
+      False -> view_not_isolated_banner()
+      True -> element.none()
+    },
     view_picker(model),
     case model.runner {
       NotRunYet -> view_info()
@@ -336,4 +361,29 @@ fn view_results(data: List(#(Implementation, Results))) -> Element(msg) {
   data
   |> list.map(pair.map_first(_, implementation.to_string))
   |> instrumentation.view
+}
+
+fn view_not_isolated_banner() {
+  html.aside([attribute.id("cross-origin-isolated-warning")], [
+    html.h3([], [html.text("Not cross-origin-isolated!")]),
+    html.p([], [
+      html.text(
+        "The server you're using does not send the appropriate headers to make
+          sure the benchmark frame is considered to be ",
+      ),
+      html.a(
+        [
+          attribute.href(
+            "https://developer.mozilla.org/en-US/docs/Web/API/Window/crossOriginIsolated",
+          ),
+        ],
+        [html.text("cross-origin isolated")],
+      ),
+      html.text(". Measured times will be less accurate by a factor of 50."),
+      html.br([]),
+      html.text("Please make sure you're using "),
+      html.code([], [html.text("gleam run -m serve")]),
+      html.text(" to run the benchmark."),
+    ]),
+  ])
 }

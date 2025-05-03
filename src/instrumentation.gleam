@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/dynamic/decode
 import gleam/float
 import gleam/list
@@ -106,30 +107,12 @@ pub fn view(data: List(#(String, Results))) -> Element(msg) {
             html.td([size(results.timeout, max)], []),
             html.td([size(results.sync, max)], [
               html.div([attribute.class("data")], [
-                html.div([], [
-                  html.text("Total: "),
-                  html.text(humanise.milliseconds_float(total)),
-                ]),
-                case results.sync >. 0.0 {
-                  True -> time("Sync", results.sync)
-                  False -> element.none()
-                },
-                case results.timeout >. 0.0 {
-                  True -> time("Timeout", results.timeout)
-                  False -> element.none()
-                },
-                case results.animation_frame >. 0.0 {
-                  True -> time("Animation frame", results.animation_frame)
-                  False -> element.none()
-                },
-                case results.microtask >. 0.0 {
-                  True -> time("Microtask", results.microtask)
-                  False -> element.none()
-                },
-                case results.promise >. 0.0 {
-                  True -> time("Promise", results.promise)
-                  False -> element.none()
-                },
+                time("Total", total),
+                time("Sync", results.sync),
+                time("Timeout", results.timeout),
+                time("Animation frame", results.animation_frame),
+                time("Microtask", results.microtask),
+                time("Promise", results.promise),
               ]),
             ]),
           ])
@@ -140,6 +123,7 @@ pub fn view(data: List(#(String, Results))) -> Element(msg) {
 }
 
 fn time(label, time) {
+  use <- bool.guard(when: time <=. 0.0, return: element.none())
   html.div([], [
     html.text(label),
     html.text(": "),

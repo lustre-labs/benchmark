@@ -40,8 +40,9 @@ body {
 }
 
 #benchmark {
-  width: 800px;
-  height: 600px;
+  width: calc(100% - 300px);
+  aspect-ratio: 4/3;
+  max-height: 80vh;
   margin: 20px;
   border: 2px solid black;
 }
@@ -49,6 +50,8 @@ body {
 #results,
 #info {
   margin: 20px;
+  margin-right: 300px;
+
   border-radius: 4px;
   display: block;
 }
@@ -58,7 +61,7 @@ body {
 }
 
 #results {
-  width: calc(100% - 200px);
+  width: calc(100% - 300px);
 
   .column tbody td {
     transform-origin: bottom;
@@ -79,4 +82,11 @@ body {
   30% {
     transform: scaleY(1);
   }
+}
+
+#cross-origin-isolated-warning {
+  display: block flow-root;
+  background-color: burlywood;
+  padding-left: 10px;
+  padding-right: 250px;
 }
