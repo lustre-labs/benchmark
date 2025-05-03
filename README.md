@@ -62,6 +62,14 @@ for production.
 Measurements were taken using an AMD Ryzen™ 7 1700X and Chromimum 135.0.7049.95,
 running on NixOS 25.05. Lustre was built using Gleam 1.11.
 
+> [!NOTE]
+> At the time of writing, Gleam 1.11 has not yet been released; instead, this
+> benchmark uses the _nightly_ pre-release of the compiler. We expect the final
+> release to produce code at least as fast as the benchmarked nightly build and
+> will validate this result once 1.11 releases. \
+> Using Gleam 1.10 does not have a significant performance impact on the 100
+> element benchmark, but is approximately 25% slower for 1000 elements.
+
 All VDOM-based frameworks - Elm, Gren, Lustre 5, React, and Vue - are extremely
 close, with variations in the single-digit millisecond range over the entire run
 of the benchmark. Expectedly, frameworks comparing against the live DOM directly
