@@ -252,7 +252,7 @@ viewEntries visibility entries =
 viewEntry : Entry -> { key : String, node : Html Msg }
 viewEntry todo =
   let
-    nodeId = "todo-" ++ String.fromInt todo.id
+    nodeId = String.fromInt todo.id
   in
   { key = nodeId
   , node =
@@ -284,7 +284,7 @@ viewEntry todo =
           [ class "edit"
           , value todo.description
           , name "title"
-          , id nodeId
+          , id ("todo-" ++ nodeId)
           , onInput (\value -> UpdateEntry { id = todo.id, value = value })
           , onBlur (EditingEntry { id = todo.id, checked = False })
           , onEnter (EditingEntry { id = todo.id, checked = False })
