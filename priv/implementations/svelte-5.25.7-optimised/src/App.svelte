@@ -1,21 +1,9 @@
 <script>
   // State manager using Svelte 5's new reactive primitives
-  let todos = $state([]);
+  let todos = $state.raw([]);
   let filter = $state('all');
   let editing = $state(null);
   let newTodo = $state('');
-  
-  // Filtered todos based on current filter
-  let filteredTodos = $derived.by(() => {
-    switch(filter) {
-      case 'active':
-        return todos.filter(todo => !todo.completed);
-      case 'completed':
-        return todos.filter(todo => todo.completed);
-      default:
-        return todos;
-    }
-  });
   
   // Number of active todos
   let activeTodoCount = $derived.by(() => {
@@ -32,11 +20,11 @@
     if (e.key === 'Enter' || e.type === 'click') {
       const text = newTodo.trim();
       if (text) {
-        todos.push({
+        todos = [...todos, {
           id: Date.now(),
           text,
           completed: false
-        });
+        }];
         
         newTodo = '';
       }
@@ -50,16 +38,13 @@
   
   // Toggle todo completed status
   function toggleTodo(id) {
-    const todo = todos.find(todo => todo.id === id)
-    todo.completed = !todo.completed
+    todos = todos.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo);
   }
   
   // Toggle all todos completed status
   function toggleAll() {
     const targetStatus = !allCompleted;
-    for (const todo of todos) {
-      todo.completed = targetStatus
-    }
+    todos = todos.map(todo => todo.completed !== targetStatus ? { ...todo, completed: targetStatus } : todo);
   }
   
   // Clear all completed todos
@@ -77,8 +62,7 @@
     const text = e.target.value.trim();
     if (e.key === 'Enter' || e.type === 'blur') {
       if (text) {
-        const todo = todos.find(todo => todo.id === id)
-        todo.text = text
+        todos = todos.map(todo => todo.id === id ? { ...todo, text: text } : todo);
       } else {
         removeTodo(id);
       }
@@ -111,7 +95,8 @@
       <label for="toggle-all">Mark all as complete</label>
       
       <ul class="todo-list">
-        {#each filteredTodos as todo (todo.id)}
+        {#each todos as todo (todo.id)}
+        {#if filter === 'all' || (filter === 'active' && !todo.completed) || (filter === 'completed' && todo.completed)}
           <li class:completed={todo.completed} class:editing={editing === todo.id}>
             <div class="view">
               <input 
@@ -133,6 +118,7 @@
               />
             {/if}
           </li>
+          {/if}
         {/each}
       </ul>
     </section>
