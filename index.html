@@ -1,38 +1,42 @@
 <!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>⚡️ Lustre Benchmark</title>
 
-  <title>⚡️ Lustre Benchmark</title>
+        <link
+            rel="stylesheet"
+            href="http://fonts.googleapis.com/css?family=Source+Sans+Pro|Source+Code+Pro"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/charts.css/dist/charts.min.css"
+        />
+        <link rel="stylesheet" href="/priv/index.css" />
 
-  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Source+Sans+Pro|Source+Code+Pro">
-  <link rel="stylesheet" href="https://unpkg.com/charts.css/dist/charts.min.css">
-  <link rel="stylesheet" href="/priv/index.css">
+        <script src="https://unpkg.com/query-selector-shadow-dom@1.0.1/dist/querySelectorShadowDom.js"></script>
+        <script type="module" src="/priv/static/lustre_benchmark.mjs"></script>
 
-  <script src="https://unpkg.com/query-selector-shadow-dom@1.0.1/dist/querySelectorShadowDom.js"></script>
-  <script type="module" src="/priv/static/lustre_benchmark.mjs"></script>
+        <script type="application/json" id="implementations">
+            [
+                { "name": "Alpine", "version": "3.14.9", "optimised": false },
+                { "name": "Elm", "version": "0.19.1", "optimised": false },
+                { "name": "Elm", "version": "0.19.1", "optimised": true },
+                { "name": "Gren", "version": "0.6.2", "optimised": false },
+                { "name": "Gren", "version": "0.6.2", "optimised": true },
+                { "name": "Lustre", "version": "4.6.4", "optimised": false },
+                { "name": "Lustre", "version": "5.5.0", "optimised": false },
+                { "name": "Lustre", "version": "5.5.0", "optimised": true },
+                { "name": "React", "version": "19.1.0", "optimised": false },
+                { "name": "React", "version": "19.1.0", "optimised": true },
+                { "name": "Solid", "version": "1.9.5", "optimised": false },
+                { "name": "Svelte", "version": "5.25.7", "optimised": false },
+                { "name": "Vue", "version": "3.5.13", "optimised": false }
+            ]
+        </script>
+    </head>
 
-  <script type="application/json" id="implementations">
-    [
-      { "name": "Alpine", "version": "3.14.9", "optimised": false },
-      { "name": "Elm", "version": "0.19.1", "optimised": false },
-      { "name": "Elm", "version": "0.19.1", "optimised": true },
-      { "name": "Gren", "version": "0.6.2", "optimised": false },
-      { "name": "Gren", "version": "0.6.2", "optimised": true },
-      { "name": "Lustre", "version": "4.6.4", "optimised": false },
-      { "name": "Lustre", "version": "5.3.5", "optimised": false },
-      { "name": "React", "version": "19.1.0", "optimised": false },
-      { "name": "React", "version": "19.1.0", "optimised": true },
-      { "name": "Solid", "version": "1.9.5", "optimised": false },
-      { "name": "Svelte", "version": "5.25.7", "optimised": false },
-      { "name": "Vue", "version": "3.5.13", "optimised": false }
-    ]
-  </script>
-</head>
-
-<body>
-</body>
-
+    <body></body>
 </html>

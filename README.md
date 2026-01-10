@@ -59,8 +59,8 @@ for production.
 ![](./docs/results-100.png)
 ![](./docs/results-1000.png)
 
-Measurements were taken using an AMD Ryzen™ 7 1700X and Chromimum 139.0.7258.66,
-running on NixOS 25.11. Lustre was built using Gleam 1.12.
+Measurements were taken using a MacBook Pro with an M4 Pro 14-core processor,
+running Chromimum 142.0.7444.175. Lustre was built using Gleam 1.14.
 
 All VDOM-based frameworks - Elm, Gren, Lustre 5, React, and Vue - are extremely
 close, with variations in the single-digit millisecond range over the entire run
@@ -76,8 +76,8 @@ characteristics more clearly: All "optimised" implementations get even better
 with that many elements; optimised Elm becomes over twice as fast as React
 or Svelte. Lustre can increase its distance compared to React and Elm.
 
-Notably, Elm still beats all other frameworks including Svelte with the
-introduction of a single `lazy` call.
+Notably, Elm, Gren and Lustre still beat all other frameworks including
+Svelte with the introduction of a single `lazy` call.
 
 ## Development
 
@@ -104,4 +104,3 @@ Implementations have to follow the following structure:
   <script src="/priv/instrumentation.js"></script>
   ```
 4. Add your implementation to the `index.html` file in the root directory.
-
